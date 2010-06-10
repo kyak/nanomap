@@ -239,7 +239,7 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
     switch (event->key()) {
         case Qt::Key_Tab:
         {
-            emit switchView();
+            emit showMarkerList();
             break;
         }
         case Qt::Key_M:
@@ -301,6 +301,11 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
         {
             changeZoomLevel(1);
             reloadPixmaps();
+            break;
+        }
+        case Qt::Key_D:
+        {
+            emit downloadArea(m_level, geoRect());
             break;
         }
         case Qt::Key_U:
@@ -731,7 +736,22 @@ void MapWidget::centerOnGeoPos(qreal lon, qreal lat)
     updatePos();
 }
 
-QPointF MapWidget::geoPos()
+QRectF MapWidget::geoRect() const
+{
+    qreal partX = (-m_pos.x()) / 256.0;
+    qreal partY = (height() - m_pos.y()) / 256.0;
+    qreal minLon = tilex2lon(m_indexX + partX, m_level);
+    qreal minLat = tiley2lat(m_indexY + partY, m_level);
+
+    partX = (width() - m_pos.x()) / 256.0;
+    partY = (-m_pos.y()) / 256.0;
+    qreal maxLon = tilex2lon(m_indexX + partX, m_level);
+    qreal maxLat = tiley2lat(m_indexY + partY, m_level);
+
+    return QRectF(QPointF(minLon, minLat), QPointF(maxLon, maxLat));
+}
+
+QPointF MapWidget::geoPos() const
 {
     qreal w = width() / 2.0;
     qreal h = height() / 2.0;
@@ -743,7 +763,7 @@ QPointF MapWidget::geoPos()
     return QPointF(lon, lat);
 }
 
-QPoint MapWidget::geo2screen(qreal lon, qreal lat)
+QPoint MapWidget::geo2screen(qreal lon, qreal lat) const
 {
     qreal tx = lon2tilex(lon, m_level);
     qreal ty = lat2tiley(lat, m_level);
@@ -754,22 +774,22 @@ QPoint MapWidget::geo2screen(qreal lon, qreal lat)
     return QPoint(x, y);
 }
 
-qreal MapWidget::lon2tilex(qreal lon, int z)
+qreal MapWidget::lon2tilex(qreal lon, int z) const
 {
     return (lon + 180.0) / 360.0 * pow(2.0, z);
 }
  
-qreal MapWidget::lat2tiley(qreal lat, int z)
+qreal MapWidget::lat2tiley(qreal lat, int z) const
 {
     return (1.0 - log(tan(lat * M_PI/180.0) + 1.0 / cos(lat * M_PI/180.0)) / M_PI) / 2.0 * pow(2.0, z);
 }
  
-qreal MapWidget::tilex2lon(qreal x, int z)
+qreal MapWidget::tilex2lon(qreal x, int z) const
 {
     return x / pow(2.0, z) * 360.0 - 180;
 }
  
-qreal MapWidget::tiley2lat(qreal y, int z)
+qreal MapWidget::tiley2lat(qreal y, int z) const
 {
     qreal n = M_PI - 2.0 * M_PI * y / pow(2.0, z);
     return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));

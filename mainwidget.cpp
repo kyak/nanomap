@@ -19,6 +19,7 @@
 
 #include "mainwidget.h"
 
+#include "downloadwidget.h"
 #include "mapwidget.h"
 #include "markerlist.h"
 
@@ -28,20 +29,26 @@ MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent),
     m_stack(new QStackedWidget(this)),
     m_map(new MapWidget(this)),
-    m_markerList(new MarkerList(this))
+    m_markerList(new MarkerList(this)),
+    m_dlWidget(new DownloadWidget(this))
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_stack);
 
-    connect(m_map, SIGNAL(switchView()), this, SLOT(showList()));
+    connect(m_map, SIGNAL(showMarkerList()), this, SLOT(showList()));
     connect(m_map, SIGNAL(markerAdded(QString)), this, SLOT(markerAdded(QString)));
+    connect(m_map, SIGNAL(downloadArea(int, QRectF)), this, SLOT(downloadArea(int, QRectF)));
     m_stack->insertWidget(0, m_map);
+
     connect(m_markerList, SIGNAL(back()), this, SLOT(showMap()));
     connect(m_markerList, SIGNAL(centerOnMarker(int)), this, SLOT(centerOnMarker(int)));
     connect(m_markerList, SIGNAL(removeMarker(int)), this, SLOT(removeMarker(int)));
     connect(m_markerList, SIGNAL(markerRenamed(int, QString)), this, SLOT(markerRenamed(int, QString)));
     m_stack->insertWidget(1, m_markerList);
+
+    connect(m_dlWidget, SIGNAL(back()), this, SLOT(showMap()));
+    m_stack->insertWidget(2, m_dlWidget);
 
     resize(320, 240);
 }
@@ -79,5 +86,12 @@ void MainWidget::removeMarker(int row)
 void MainWidget::markerRenamed(int index, const QString &name)
 {
     m_map->renameMarker(index, name);
+}
+
+void MainWidget::downloadArea(int level, const QRectF &rect)
+{
+    m_dlWidget->setStartLevel(level);
+    m_dlWidget->setDownloadRect(rect);
+    m_stack->setCurrentIndex(2);
 }
 

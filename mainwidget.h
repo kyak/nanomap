@@ -24,13 +24,13 @@
 #include <QtGui/QStackedWidget>
 #include <QtGui/QWidget>
 
+class DownloadWidget;
 class MapWidget;
 class MarkerList;
 
 class MainWidget : public QWidget
 {
     Q_OBJECT
-
 public:
     MainWidget(QWidget *parent = 0);
     ~MainWidget();
@@ -42,11 +42,13 @@ private slots:
     void centerOnMarker(int row);
     void removeMarker(int row);
     void markerRenamed(int index, const QString &name);
+    void downloadArea(int level, const QRectF &rect);
 
 private:
     QStackedWidget *m_stack;
     MapWidget *m_map;
     MarkerList *m_markerList;
+    DownloadWidget *m_dlWidget;
 
 };
 

@@ -17,8 +17,9 @@
  * Boston, MA  02110-1301  USA
  */
 
-#include <QtGui/QApplication>
 #include "mainwidget.h"
+
+#include <QtGui/QApplication>
 
 int main(int argc, char *argv[])
 {

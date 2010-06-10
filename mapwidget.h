@@ -27,7 +27,6 @@
 class MapWidget : public QWidget
 {
     Q_OBJECT
-
 public:
     MapWidget(QWidget *parent = 0);
     ~MapWidget();
@@ -40,7 +39,8 @@ public slots:
 
 signals:
     void markerAdded(const QString &name);
-    void switchView();
+    void showMarkerList();
+    void downloadArea(int level, const QRectF &rect);
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);
@@ -65,12 +65,13 @@ private:
     void downloadTile(int x, int y, int level);
     void changeZoomLevel(int diff);
     void centerOnGeoPos(qreal lon, qreal lat);
-    QPointF geoPos();
-    QPoint geo2screen(qreal lon, qreal lat);
-    qreal lon2tilex(qreal lon, int z);
-    qreal lat2tiley(qreal lat, int z);
-    qreal tilex2lon(qreal x, int z);
-    qreal tiley2lat(qreal y, int z);
+    QRectF geoRect() const;
+    QPointF geoPos() const;
+    QPoint geo2screen(qreal lon, qreal lat) const;
+    qreal lon2tilex(qreal lon, int z) const;
+    qreal lat2tiley(qreal lat, int z) const;
+    qreal tilex2lon(qreal x, int z) const;
+    qreal tiley2lat(qreal y, int z) const;
 
     bool m_usage, m_infos, m_zoomable;
     QString m_baseName;

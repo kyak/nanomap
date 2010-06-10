@@ -17,37 +17,46 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef MARKERLIST_H
-#define MARKERLIST_H
+#ifndef DOWNLOADWIDGET_H
+#define DOWNLOADWIDGET_H
 
-#include <QtGui/QListWidget>
+#include <QtGui/QLabel>
+#include <QtGui/QProgressBar>
+#include <QtGui/QSpinBox>
 #include <QtGui/QWidget>
+#include <QtNetwork/QNetworkAccessManager>
 
-class MarkerList : public QWidget
+class DownloadWidget : public QWidget
 {
     Q_OBJECT
 public:
-    MarkerList(QWidget *parent = 0);
-    ~MarkerList();
+    DownloadWidget(QWidget *parent = 0);
+    ~DownloadWidget();
 
-    void addMarker(const QString &name);
+    void setStartLevel(int level);
+    void setDownloadRect(const QRectF &rect);
 
 signals:
     void back();
-    void centerOnMarker(int index);
-    void removeMarker(int index);
-    void markerRenamed(int index, const QString &name);
 
 private slots:
-    void center();
-    void removeMarker();
-    void beginRenameMarker();
-    void endRenameMarker();
+    void startDownload();
+    void replyFinished(QNetworkReply *reply);
 
 private:
-    QListWidget *m_list;
-    bool m_edit;
+    QString lon2string(qreal lon);
+    QString lat2string(qreal lat);
+    int lon2tilex(qreal lon, int z);
+    int lat2tiley(qreal lat, int z);
+
+    QNetworkAccessManager *m_manager;
+    int m_startLevel;
+    QRectF m_dlRect;
+    QStringList m_dlList;
+    QLabel *m_up, *m_left, *m_right, *m_bottom;
+    QSpinBox *m_levelSpinBox;
+    QProgressBar *m_dlProgress;
 
 };
 
-#endif // MARKERLIST_H
+#endif // DOWNLOADWIDGET_H
