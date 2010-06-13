@@ -258,25 +258,21 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
             }
             break;
         }
-        case Qt::Key_K:
         case Qt::Key_Up:
         {
             m_pos += QPoint(0, width);
             break;
         }
-        case Qt::Key_J:
         case Qt::Key_Down:
         {
             m_pos += QPoint(0, -width);
             break;
         }
-        case Qt::Key_H:
         case Qt::Key_Left:
         {
             m_pos += QPoint(width, 0);
             break;
         }
-        case Qt::Key_L:
         case Qt::Key_Right:
         {
             m_pos += QPoint(-width, 0);
@@ -314,11 +310,13 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
             break;
         }
         case Qt::Key_Q:
+        case Qt::Key_Escape:
         {
             qApp->quit();
             break;
         }
         case Qt::Key_Question:
+        case Qt::Key_H:
         {
             m_usage = !m_usage;
             break;
@@ -394,8 +392,8 @@ void MapWidget::paintEvent(QPaintEvent *event)
         painter.drawRoundedRect(20, 5, 280, 215, 10, 10);
 
         QStringList usage;
-        usage << "q: Quit application";
-        usage << "?: Show/hide this message";
+        usage << "Esc: Quit application";
+        usage << "h: Show/hide this message";
         usage << "Arrows: Move map by 10 pixel";
         usage << "Alt+Arrows: Move map by 100 pixel";
         usage << "c: Move to the center of the map";
@@ -408,6 +406,7 @@ void MapWidget::paintEvent(QPaintEvent *event)
         usage << "Alt+m: Show/hide all marker";
         usage << "tab: Show/hide marker list";
         if (m_networkMode) {
+            usage << "d: Download tiles for visible area";
             painter.drawText(30, 200, 260, 20, Qt::AlignCenter, "Map data: (C) OpenStreetMap.org");
         } else if (!m_copyright.isEmpty()) {
             painter.drawText(30, 200, 260, 20, Qt::AlignCenter, "Map data: (C) "+m_copyright);
