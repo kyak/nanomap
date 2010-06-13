@@ -353,8 +353,17 @@ void MapWidget::paintEvent(QPaintEvent *event)
         foreach (const QPointF &m, m_markerPos) {
             QPoint pos = geo2screen(m.x(), m.y());
             int w = fm.width(m_markerName.at(i)) / 2;
-            QRect rect(pos.x() - w, pos.y() - h, 2*w, 2*h);
-            painter.drawRect(rect.adjusted(-2, 0, 2, 0));
+            QRect rect(pos.x() - w - 2, pos.y() - h - 11, 2*w + 4, 2*h);
+            QPolygon polygon;
+            polygon << pos;
+            polygon << pos + QPoint(-2, -5);
+            polygon << rect.bottomLeft();
+            polygon << rect.topLeft();
+            polygon << rect.topRight();
+            polygon << rect.bottomRight();
+            polygon << pos + QPoint(2, -5);
+            polygon << pos;
+            painter.drawPolygon(polygon);
             painter.drawText(rect, Qt::AlignCenter, m_markerName.at(i));
             ++i;
         }
