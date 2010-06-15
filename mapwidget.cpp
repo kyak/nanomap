@@ -768,7 +768,7 @@ void MapWidget::loadGpx(const QString &filename)
 
 void MapWidget::loadConfig()
 {
-    QSettings set(QDir::homePath()+"/.nanomap.conf", QSettings::NativeFormat);
+    QSettings set(QDir::homePath()+"/Maps/nanomap.conf", QSettings::NativeFormat);
 
     set.beginGroup("map");
     qreal lon = set.value("lon", 0).toReal();
@@ -791,7 +791,7 @@ void MapWidget::loadConfig()
 
 void MapWidget::saveConfig()
 {
-    QSettings set(QDir::homePath()+"/.nanomap.conf", QSettings::NativeFormat);
+    QSettings set(QDir::homePath()+"/Maps/nanomap.conf", QSettings::NativeFormat);
 
     set.beginGroup("map");
     QPointF pos = geoPos();
