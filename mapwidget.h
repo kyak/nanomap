@@ -58,9 +58,12 @@ private slots:
 private:
     void updatePos();
     void reloadPixmaps();
+    void updateTrack();
+    void addMarker(const QPointF &pos, const QString &name);
     QString filename(int x, int y);
     QPixmap *loadPixmap(int x, int y);
     void loadMapFile(const QString &filename);
+    void loadGpx(const QString &filename);
     void saveConfig();
     void downloadTile(int x, int y, int level);
     void changeZoomLevel(int diff);
@@ -94,6 +97,9 @@ private:
     QList<QPointF> m_markerPos;
     QStringList m_markerName;
     bool m_drawMarker;
+    QPolygonF m_track;
+    QList<QPoint> m_trackOnScreen;
+    QPoint m_trackOffset;
 
 };
 

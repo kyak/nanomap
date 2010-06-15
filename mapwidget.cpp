@@ -21,6 +21,7 @@
 
 #include <cmath>
 
+#include <QtCore/QDateTime>
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
@@ -35,6 +36,7 @@
 #include <QtGui/QPaintEvent>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
+#include <QtXml/QXmlStreamReader>
 
 MapWidget::MapWidget(QWidget *parent)
     : QWidget(parent),
@@ -69,15 +71,22 @@ MapWidget::MapWidget(QWidget *parent)
     m_copyright(),
     m_markerPos(),
     m_markerName(),
-    m_drawMarker(true)
+    m_drawMarker(true),
+    m_track(),
+    m_trackOnScreen(),
+    m_trackOffset()
 {
     for (int x = 0; x < 100; ++x) {
         for (int y = 0; y < 100; ++y) {
             m_pix[x][y] = 0;
         }
     }
+    QString fileName;
     if (QApplication::arguments().count() > 1) {
-        loadMapFile(QApplication::arguments().at(1));
+        fileName = QApplication::arguments().at(1);
+    }
+    if (fileName.endsWith(".map")) {
+        loadMapFile(fileName);
 
         m_zoomable = m_zoomLevel.count() > 1 &&
                      m_zoomLevel.count() == m_minIndexXList.count() &&
@@ -87,18 +96,6 @@ MapWidget::MapWidget(QWidget *parent)
 
         m_indexX = (m_minIndexX + m_maxIndexX) / 2;
         m_indexY = (m_minIndexY + m_maxIndexY) / 2;
-
-        if (QApplication::arguments().count() > 3) {
-            bool ok;
-            int x = QApplication::arguments().at(2).toInt(&ok);
-            if (ok) {
-                m_indexX = x;
-            }
-            int y = QApplication::arguments().at(3).toInt(&ok);
-            if (ok) {
-                m_indexY = y;
-            }
-        }
 
         m_cols = ceil(320.0 / (qreal) m_pixWidth) + 1;
         m_rows = ceil(240.0 / (qreal) m_pixHeight) + 1;
@@ -114,9 +111,12 @@ MapWidget::MapWidget(QWidget *parent)
         for (int i = 0; i < 19; ++i) {
             m_zoomLevel << QString::number(i);
             m_minIndexXList << 0;
-            m_maxIndexXList << pow(2, i) - 1;
+            m_maxIndexXList << (1 << i) - 1;
             m_minIndexYList << 0;
-            m_maxIndexYList << pow(2, i) - 1;
+            m_maxIndexYList << (1 << i) - 1;
+        }
+        if (fileName.endsWith(".gpx")) {
+            loadGpx(fileName);
         }
         m_baseName = QDir::homePath()+"/Maps/OSM/%z/%x/%y.png";
         QTimer::singleShot(100, this, SLOT(loadConfig()));
@@ -134,7 +134,9 @@ MapWidget::MapWidget(QWidget *parent)
 
 MapWidget::~MapWidget()
 {
-    saveConfig();
+    if (m_networkMode) {
+        saveConfig();
+    }
 }
 
 void MapWidget::removeMarker(int index)
@@ -188,6 +190,7 @@ void MapWidget::resizeEvent(QResizeEvent *event)
 void MapWidget::mouseMoveEvent(QMouseEvent *event)
 {
     if (m_isMoving) {
+        m_trackOffset += (event->pos() - m_startPos) - m_pos;
         m_pos = event->pos() - m_startPos;
         updatePos();
     }
@@ -197,11 +200,13 @@ void MapWidget::mousePressEvent(QMouseEvent *event)
 {
     if (QRect(9, 14, 13, 13).contains(event->pos())) {
         changeZoomLevel(1);
+        updateTrack();
         reloadPixmaps();
         updatePos();
         m_isMoving = false;
     } else if (QRect(9, 214, 13, 13).contains(event->pos())) {
         changeZoomLevel(-1);
+        updateTrack();
         reloadPixmaps();
         updatePos();
         m_isMoving = false;
@@ -222,9 +227,11 @@ void MapWidget::wheelEvent(QWheelEvent *event)
 {
     if (event->delta() < 0) {
         changeZoomLevel(-1);
+        updateTrack();
         reloadPixmaps();
     } else {
         changeZoomLevel(1);
+        updateTrack();
         reloadPixmaps();
     }
     updatePos();
@@ -232,6 +239,7 @@ void MapWidget::wheelEvent(QWheelEvent *event)
 
 void MapWidget::keyPressEvent(QKeyEvent *event)
 {
+    QPoint move;
     int width = 10;
     if (event->modifiers() & Qt::AltModifier) {
         width = 100;
@@ -252,30 +260,28 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
                     n = m_markerName.last().toInt();
                 }
                 QString newName = QString::number(n+1);
-                m_markerPos << geoPos();
-                m_markerName << newName;
-                emit markerAdded(newName);
+                addMarker(geoPos(), newName);
             }
             break;
         }
         case Qt::Key_Up:
         {
-            m_pos += QPoint(0, width);
+            move = QPoint(0, width);
             break;
         }
         case Qt::Key_Down:
         {
-            m_pos += QPoint(0, -width);
+            move = QPoint(0, -width);
             break;
         }
         case Qt::Key_Left:
         {
-            m_pos += QPoint(width, 0);
+            move = QPoint(width, 0);
             break;
         }
         case Qt::Key_Right:
         {
-            m_pos += QPoint(-width, 0);
+            move = QPoint(-width, 0);
             break;
         }
         case Qt::Key_C:
@@ -290,12 +296,14 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
         case Qt::Key_O:
         {
             changeZoomLevel(-1);
+            updateTrack();
             reloadPixmaps();
             break;
         }
         case Qt::Key_I:
         {
             changeZoomLevel(1);
+            updateTrack();
             reloadPixmaps();
             break;
         }
@@ -322,6 +330,8 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
             break;
         }
     }
+    m_pos += move;
+    m_trackOffset += move;
     updatePos();
 }
 
@@ -344,6 +354,16 @@ void MapWidget::paintEvent(QPaintEvent *event)
     }
     if (empty) {
         painter.drawText(0, 0, width(), height(), Qt::AlignCenter, "No Map Loaded");
+    }
+    if (m_trackOnScreen.count() > 1) {
+        QPoint p1, p2 = m_trackOnScreen.first();
+        for (int i = 1; i < m_trackOnScreen.count(); ++i) {
+            p1 = m_trackOnScreen.at(i);
+            if (!p1.isNull()) {
+                painter.drawLine(p1 + m_trackOffset, p2 + m_trackOffset);
+                p2 = p1;
+            }
+        }
     }
     if (m_drawMarker) {
         int i = 0;
@@ -557,6 +577,30 @@ void MapWidget::reloadPixmaps()
     }
 }
 
+void MapWidget::updateTrack()
+{
+    if (m_track.count() > 1) {
+        m_trackOnScreen.clear();
+        m_trackOffset = geo2screen(m_track.first().x(), m_track.first().y());
+        m_trackOnScreen << QPoint(0, 0);
+        for (int i = 1; i < m_track.count(); ++i) {
+            QPointF p = m_track.at(i);
+            if (!p.isNull()) {
+                m_trackOnScreen << geo2screen(p.x(), p.y()) - m_trackOffset;
+            } else {
+                m_trackOnScreen << QPoint();
+            }
+        }
+    }
+}
+
+void MapWidget::addMarker(const QPointF &pos, const QString &name)
+{
+    m_markerPos << pos;
+    m_markerName << name;
+    emit markerAdded(name);
+}
+
 QString MapWidget::filename(int x, int y)
 {
     QString result;
@@ -651,9 +695,81 @@ void MapWidget::loadMapFile(const QString &filename)
     }
 }
 
+void MapWidget::loadGpx(const QString &filename)
+{
+    QFile file(filename);
+    if (file.open(QIODevice::ReadOnly)) {
+        QXmlStreamReader xml(&file);
+
+        QPolygonF points;
+        QList<float> elev;
+        QList<int> time;
+
+        QString tag, tag2;
+        QString name;
+        QPointF pos;
+        while (!xml.atEnd()) {
+            xml.readNext();
+            if (xml.isStartElement()) {
+                if (xml.name() == "trkpt") {
+                    tag = "trkpt";
+                    float lat = xml.attributes().value("lat").toString().toFloat();
+                    float lon = xml.attributes().value("lon").toString().toFloat();
+
+                    points << QPointF(lon, lat);
+                } else if (xml.name() == "ele") {
+                    tag2 = "ele";
+                } else if (xml.name() == "time") {
+                    tag2 = "time";
+                } else if (xml.name() == "wpt") {
+                    tag = "wpt";
+                    float lat = xml.attributes().value("lat").toString().toFloat();
+                    float lon = xml.attributes().value("lon").toString().toFloat();
+
+                    pos = QPointF(lon, lat);
+                } else if (xml.name() == "name") {
+                    tag2 = "name";
+                } else if (xml.name() == "trk" ||
+                           xml.name() == "trkseg") {
+                } else {
+                    tag2.clear();
+                }
+            } else if (xml.isEndElement()) {
+                if (xml.name() == "trkseg") {
+                    if (!points.isEmpty()) {
+                        m_track << points;
+                        m_track << QPointF();
+                    }
+                    points.clear();
+                    elev.clear();
+                    time.clear();
+                } else if (xml.name() == "wpt") {
+                    //addMarker(pos, name);
+                    name.clear();
+                }
+            } else if (xml.isCharacters() && !xml.isWhitespace()) {
+                if (tag == "trkpt") {
+                    if (tag2 == "ele") {
+                        elev << xml.text().toString().toFloat();
+                    } else if (tag2 == "time") {
+                        QDateTime dt = QDateTime::fromString(xml.text().toString(), Qt::ISODate);
+                        time << dt.toTime_t();
+                    }
+                } else if (tag == "wpt") {
+                    if (tag2 == "name") {
+                        name = xml.text().toString();
+                    }
+                }
+            }
+        }
+        updateTrack();
+    }
+}
+
 void MapWidget::loadConfig()
 {
     QSettings set(QDir::homePath()+"/.nanomap.conf", QSettings::NativeFormat);
+
     set.beginGroup("map");
     qreal lon = set.value("lon", 0).toReal();
     qreal lat = set.value("lat", 0).toReal();
@@ -661,14 +777,14 @@ void MapWidget::loadConfig()
     m_usage = set.value("usage", true).toBool();
     changeZoomLevel(level - m_level);
     centerOnGeoPos(lon, lat);
+    updateTrack();
     set.endGroup();
+
     set.beginGroup("marker");
     QStringList m = set.childKeys();
     foreach (const QString &marker, m) {
         QPointF pos = set.value(marker).toPointF();
-        m_markerPos << pos;
-        m_markerName << marker;
-        emit markerAdded(marker);
+        addMarker(pos, marker);
     }
     set.endGroup();
 }
@@ -676,6 +792,7 @@ void MapWidget::loadConfig()
 void MapWidget::saveConfig()
 {
     QSettings set(QDir::homePath()+"/.nanomap.conf", QSettings::NativeFormat);
+
     set.beginGroup("map");
     QPointF pos = geoPos();
     set.setValue("lon", pos.x());
@@ -683,6 +800,7 @@ void MapWidget::saveConfig()
     set.setValue("level", m_level);
     set.setValue("usage", m_usage);
     set.endGroup();
+
     set.beginGroup("marker");
     set.remove("");
     for (int i = 0; i < m_markerPos.count(); ++i) {
@@ -784,22 +902,22 @@ QPoint MapWidget::geo2screen(qreal lon, qreal lat) const
 
 qreal MapWidget::lon2tilex(qreal lon, int z) const
 {
-    return (lon + 180.0) / 360.0 * pow(2.0, z);
+    return (lon + 180.0) / 360.0 * (1 << z);
 }
  
 qreal MapWidget::lat2tiley(qreal lat, int z) const
 {
-    return (1.0 - log(tan(lat * M_PI/180.0) + 1.0 / cos(lat * M_PI/180.0)) / M_PI) / 2.0 * pow(2.0, z);
+    return (1.0 - log(tan(lat * M_PI/180.0) + 1.0 / cos(lat * M_PI/180.0)) / M_PI) / 2.0 * (1 << z);
 }
  
 qreal MapWidget::tilex2lon(qreal x, int z) const
 {
-    return x / pow(2.0, z) * 360.0 - 180;
+    return x / (1 << z) * 360.0 - 180;
 }
  
 qreal MapWidget::tiley2lat(qreal y, int z) const
 {
-    qreal n = M_PI - 2.0 * M_PI * y / pow(2.0, z);
+    qreal n = M_PI - 2.0 * M_PI * y / (1 << z);
     return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
 }
 
