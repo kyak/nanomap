@@ -71,6 +71,9 @@ private:
     QRectF geoRect() const;
     QPointF geoPos() const;
     QPoint geo2screen(qreal lon, qreal lat) const;
+    QPoint raw2screen(qreal x, qreal y, int scale) const;
+    qreal lon2rawx(qreal lon) const;
+    qreal lat2rawy(qreal lat) const;
     qreal lon2tilex(qreal lon, int z) const;
     qreal lat2tiley(qreal lat, int z) const;
     qreal tilex2lon(qreal x, int z) const;

@@ -580,13 +580,14 @@ void MapWidget::reloadPixmaps()
 void MapWidget::updateTrack()
 {
     if (m_track.count() > 1) {
+        int scale = 1 << m_level;
         m_trackOnScreen.clear();
-        m_trackOffset = geo2screen(m_track.first().x(), m_track.first().y());
+        m_trackOffset = raw2screen(m_track.first().x(), m_track.first().y(), scale);
         m_trackOnScreen << QPoint(0, 0);
         for (int i = 1; i < m_track.count(); ++i) {
             QPointF p = m_track.at(i);
             if (!p.isNull()) {
-                m_trackOnScreen << geo2screen(p.x(), p.y()) - m_trackOffset;
+                m_trackOnScreen << raw2screen(p.x(), p.y(), scale) - m_trackOffset;
             } else {
                 m_trackOnScreen << QPoint();
             }
@@ -716,7 +717,7 @@ void MapWidget::loadGpx(const QString &filename)
                     float lat = xml.attributes().value("lat").toString().toFloat();
                     float lon = xml.attributes().value("lon").toString().toFloat();
 
-                    points << QPointF(lon, lat);
+                    points << QPointF(lon2rawx(lon), lat2rawy(lat));
                 } else if (xml.name() == "ele") {
                     tag2 = "ele";
                 } else if (xml.name() == "time") {
@@ -898,6 +899,27 @@ QPoint MapWidget::geo2screen(qreal lon, qreal lat) const
     int y = (ty * m_pixHeight) - ((m_indexY * m_pixHeight) - m_pos.y());
 
     return QPoint(x, y);
+}
+
+QPoint MapWidget::raw2screen(qreal x, qreal y, int scale) const
+{
+    qreal tx = x * scale;
+    qreal ty = y * scale;
+
+    int sx = (tx * m_pixWidth) - ((m_indexX * m_pixWidth) - m_pos.x());
+    int sy = (ty * m_pixHeight) - ((m_indexY * m_pixHeight) - m_pos.y());
+
+    return QPoint(sx, sy);
+}
+
+qreal MapWidget::lon2rawx(qreal lon) const
+{
+    return (lon + 180.0) / 360.0;
+}
+ 
+qreal MapWidget::lat2rawy(qreal lat) const
+{
+    return (1.0 - log(tan(lat * M_PI/180.0) + 1.0 / cos(lat * M_PI/180.0)) / M_PI) / 2.0;
 }
 
 qreal MapWidget::lon2tilex(qreal lon, int z) const
