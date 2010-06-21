@@ -17,36 +17,48 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef MAINWIDGET_H
-#define MAINWIDGET_H
+#ifndef ABSTRACT_LAYER_H
+#define ABSTRACT_LAYER_H
 
-#include <QtGui/QListWidget>
-#include <QtGui/QStackedWidget>
-#include <QtGui/QWidget>
+#include <QtCore/QObject>
+#include <QtGui/QPainter>
 
-class DownloadWidget;
 class MapWidget;
-class MarkerList;
 
-class MainWidget : public QWidget
+enum Layer
+{
+    Tracks,
+    Marker,
+    Time,
+    System,
+    User
+};
+
+class AbstractLayer : public QObject
 {
     Q_OBJECT
 public:
-    MainWidget(QWidget *parent = 0);
-    ~MainWidget();
+    AbstractLayer(MapWidget *map);
 
-private slots:
-    void showList();
-    void markerAdded(const QString &name);
-    void showMap();
-    void downloadArea(int level, const QRectF &rect);
+    virtual void load(const QString &filename);
+    virtual void zoom(int level);
+    virtual void pan(const QPoint &move);
+    virtual void triggerAction();
+
+    void paintLayer(QPainter *painter);
+
+    MapWidget *map() const;
+    bool isVisible() const;
+    void setVisible(bool visible = true);
+    void toggleVisibility();
+
+protected:
+    virtual void paint(QPainter *painter) = 0;
 
 private:
-    QStackedWidget *m_stack;
     MapWidget *m_map;
-    MarkerList *m_markerList;
-    DownloadWidget *m_dlWidget;
+    bool m_visible;
 
 };
 
-#endif // MAINWIDGET_H
+#endif // ABSTRACT_LAYER_H

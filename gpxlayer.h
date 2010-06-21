@@ -17,36 +17,31 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef MAINWIDGET_H
-#define MAINWIDGET_H
+#ifndef GPX_LAYER_H
+#define GPX_LAYER_H
 
-#include <QtGui/QListWidget>
-#include <QtGui/QStackedWidget>
-#include <QtGui/QWidget>
+#include "abstractlayer.h"
 
-class DownloadWidget;
-class MapWidget;
-class MarkerList;
+#include <QtGui/QPainter>
 
-class MainWidget : public QWidget
+class GpxLayer : public AbstractLayer
 {
     Q_OBJECT
 public:
-    MainWidget(QWidget *parent = 0);
-    ~MainWidget();
+    GpxLayer(MapWidget *map);
 
-private slots:
-    void showList();
-    void markerAdded(const QString &name);
-    void showMap();
-    void downloadArea(int level, const QRectF &rect);
+    virtual void load(const QString &filename);
+    virtual void zoom(int level);
+    virtual void pan(const QPoint &move);
+
+protected:
+    virtual void paint(QPainter *painter);
 
 private:
-    QStackedWidget *m_stack;
-    MapWidget *m_map;
-    MarkerList *m_markerList;
-    DownloadWidget *m_dlWidget;
+    QPolygonF m_track;
+    QList<QPoint> m_trackOnScreen;
+    QPoint m_trackOffset;
 
 };
 
-#endif // MAINWIDGET_H
+#endif // GPX_LAYER_H

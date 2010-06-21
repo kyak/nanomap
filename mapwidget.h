@@ -20,8 +20,11 @@
 #ifndef MAPWIDGET_H
 #define MAPWIDGET_H
 
-#include <QtGui/QWidget>
+#include "abstractlayer.h"
+
+#include <QtCore/QHash>
 #include <QtCore/QPoint>
+#include <QtGui/QWidget>
 #include <QtNetwork/QNetworkAccessManager>
 
 class MapWidget : public QWidget
@@ -31,14 +34,17 @@ public:
     MapWidget(QWidget *parent = 0);
     ~MapWidget();
 
-    void removeMarker(int index);
-    void renameMarker(int index, const QString &name);
+    void addLayer(Layer l, AbstractLayer *layer);
+
+    QRectF geoRect() const;
+    QPointF geoPos() const;
+    QPoint geo2screen(qreal lon, qreal lat) const;
+    QPoint raw2screen(qreal x, qreal y, int scale) const;
 
 public slots:
-    void centerOnMarker(int index);
+    void centerOnGeoPos(qreal lon, qreal lat);
 
 signals:
-    void markerAdded(const QString &name);
     void showMarkerList();
     void downloadArea(int level, const QRectF &rect);
 
@@ -58,28 +64,14 @@ private slots:
 private:
     void updatePos();
     void reloadPixmaps();
-    void updateTrack();
-    void addMarker(const QPointF &pos, const QString &name);
     QString filename(int x, int y);
     QPixmap *loadPixmap(int x, int y);
     void loadMapFile(const QString &filename);
-    void loadGpx(const QString &filename);
     void saveConfig();
     void downloadTile(int x, int y, int level);
     void changeZoomLevel(int diff);
-    void centerOnGeoPos(qreal lon, qreal lat);
-    QRectF geoRect() const;
-    QPointF geoPos() const;
-    QPoint geo2screen(qreal lon, qreal lat) const;
-    QPoint raw2screen(qreal x, qreal y, int scale) const;
-    qreal lon2rawx(qreal lon) const;
-    qreal lat2rawy(qreal lat) const;
-    qreal lon2tilex(qreal lon, int z) const;
-    qreal lat2tiley(qreal lat, int z) const;
-    qreal tilex2lon(qreal x, int z) const;
-    qreal tiley2lat(qreal y, int z) const;
 
-    bool m_usage, m_infos, m_zoomable;
+    bool m_usage, m_ui, m_zoomable;
     QString m_baseName;
     int m_xPadding, m_yPadding;
     QPoint m_pos, m_startPos;
@@ -97,12 +89,7 @@ private:
     QNetworkAccessManager *m_manager;
     bool m_networkMode;
     QString m_copyright;
-    QList<QPointF> m_markerPos;
-    QStringList m_markerName;
-    bool m_drawMarker;
-    QPolygonF m_track;
-    QList<QPoint> m_trackOnScreen;
-    QPoint m_trackOffset;
+    QHash<Layer, AbstractLayer *> m_layer;
 
 };
 

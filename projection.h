@@ -17,36 +17,19 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef MAINWIDGET_H
-#define MAINWIDGET_H
+#ifndef PROJECTION_H
+#define PROJECTION_H
 
-#include <QtGui/QListWidget>
-#include <QtGui/QStackedWidget>
-#include <QtGui/QWidget>
+#include <QtCore/QObject>
 
-class DownloadWidget;
-class MapWidget;
-class MarkerList;
-
-class MainWidget : public QWidget
+namespace Projection
 {
-    Q_OBJECT
-public:
-    MainWidget(QWidget *parent = 0);
-    ~MainWidget();
-
-private slots:
-    void showList();
-    void markerAdded(const QString &name);
-    void showMap();
-    void downloadArea(int level, const QRectF &rect);
-
-private:
-    QStackedWidget *m_stack;
-    MapWidget *m_map;
-    MarkerList *m_markerList;
-    DownloadWidget *m_dlWidget;
-
+    qreal lon2rawx(qreal lon);
+    qreal lat2rawy(qreal lat);
+    qreal lon2tilex(qreal lon, int z);
+    qreal lat2tiley(qreal lat, int z);
+    qreal tilex2lon(qreal x, int z);
+    qreal tiley2lat(qreal y, int z);
 };
 
-#endif // MAINWIDGET_H
+#endif // PROJECTION_H

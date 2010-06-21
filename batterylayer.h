@@ -17,36 +17,32 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef MAINWIDGET_H
-#define MAINWIDGET_H
+#ifndef BATTERY_LAYER_H
+#define BATTERY_LAYER_H
 
-#include <QtGui/QListWidget>
-#include <QtGui/QStackedWidget>
-#include <QtGui/QWidget>
+#include "abstractlayer.h"
 
-class DownloadWidget;
-class MapWidget;
-class MarkerList;
+#include <QtCore/QTimer>
+#include <QtGui/QPainter>
 
-class MainWidget : public QWidget
+class BatteryLayer : public AbstractLayer
 {
     Q_OBJECT
 public:
-    MainWidget(QWidget *parent = 0);
-    ~MainWidget();
+    BatteryLayer(MapWidget *map);
+
+protected:
+    virtual void paint(QPainter *painter);
 
 private slots:
-    void showList();
-    void markerAdded(const QString &name);
-    void showMap();
-    void downloadArea(int level, const QRectF &rect);
+    void repaint();
+    void fileChanged(const QString &filename);
 
 private:
-    QStackedWidget *m_stack;
-    MapWidget *m_map;
-    MarkerList *m_markerList;
-    DownloadWidget *m_dlWidget;
+    QTimer *m_updateTimer;
+    int m_percent;
+    bool m_isCharging;
 
 };
 
-#endif // MAINWIDGET_H
+#endif // BATTERY_LAYER_H

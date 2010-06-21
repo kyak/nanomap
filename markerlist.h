@@ -30,6 +30,7 @@ public:
     MarkerList(QWidget *parent = 0);
     ~MarkerList();
 
+public slots:
     void addMarker(const QString &name);
 
 signals:

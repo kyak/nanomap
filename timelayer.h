@@ -17,36 +17,29 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef MAINWIDGET_H
-#define MAINWIDGET_H
+#ifndef TIME_LAYER_H
+#define TIME_LAYER_H
 
-#include <QtGui/QListWidget>
-#include <QtGui/QStackedWidget>
-#include <QtGui/QWidget>
+#include "abstractlayer.h"
 
-class DownloadWidget;
-class MapWidget;
-class MarkerList;
+#include <QtCore/QTimer>
+#include <QtGui/QPainter>
 
-class MainWidget : public QWidget
+class TimeLayer : public AbstractLayer
 {
     Q_OBJECT
 public:
-    MainWidget(QWidget *parent = 0);
-    ~MainWidget();
+    TimeLayer(MapWidget *map);
+
+protected:
+    virtual void paint(QPainter *painter);
 
 private slots:
-    void showList();
-    void markerAdded(const QString &name);
-    void showMap();
-    void downloadArea(int level, const QRectF &rect);
+    void repaint();
 
 private:
-    QStackedWidget *m_stack;
-    MapWidget *m_map;
-    MarkerList *m_markerList;
-    DownloadWidget *m_dlWidget;
+    QTimer *m_updateTimer;
 
 };
 
-#endif // MAINWIDGET_H
+#endif // TIME_LAYER_H

@@ -23,6 +23,13 @@
 #include "mapwidget.h"
 #include "markerlist.h"
 
+#include "batterylayer.h"
+#include "gpxlayer.h"
+#include "markerlayer.h"
+#include "timelayer.h"
+
+#include <QtCore/QDir>
+#include <QtGui/QApplication>
 #include <QtGui/QLayout>
 
 MainWidget::MainWidget(QWidget *parent)
@@ -32,19 +39,43 @@ MainWidget::MainWidget(QWidget *parent)
     m_markerList(new MarkerList(this)),
     m_dlWidget(new DownloadWidget(this))
 {
+    QString fileName;
+    if (QApplication::arguments().count() > 1) {
+        fileName = QApplication::arguments().at(1);
+    }
+
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_stack);
 
+    AbstractLayer *l = new TimeLayer(m_map);
+    l->setVisible(false);
+    m_map->addLayer(Time, l);
+
+    l = new BatteryLayer(m_map);
+    l->setVisible(false);
+    m_map->addLayer(System, l);
+
+    l = new GpxLayer(m_map);
+    if (fileName.endsWith(".gpx")) {
+        l->load(fileName);
+    }
+    m_map->addLayer(Tracks, l);
+
+    l = new MarkerLayer(m_map);
+    connect(l, SIGNAL(markerAdded(QString)), m_markerList, SLOT(addMarker(QString)));
+    connect(m_markerList, SIGNAL(centerOnMarker(int)), l, SLOT(centerOnMarker(int)));
+    connect(m_markerList, SIGNAL(removeMarker(int)), l, SLOT(removeMarker(int)));
+    connect(m_markerList, SIGNAL(markerRenamed(int, QString)), l, SLOT(renameMarker(int, QString)));
+    l->load(QDir::homePath()+"/Maps/marker.list");
+    m_map->addLayer(Marker, l);
+
     connect(m_map, SIGNAL(showMarkerList()), this, SLOT(showList()));
-    connect(m_map, SIGNAL(markerAdded(QString)), this, SLOT(markerAdded(QString)));
     connect(m_map, SIGNAL(downloadArea(int, QRectF)), this, SLOT(downloadArea(int, QRectF)));
     m_stack->insertWidget(0, m_map);
 
     connect(m_markerList, SIGNAL(back()), this, SLOT(showMap()));
-    connect(m_markerList, SIGNAL(centerOnMarker(int)), this, SLOT(centerOnMarker(int)));
-    connect(m_markerList, SIGNAL(removeMarker(int)), this, SLOT(removeMarker(int)));
-    connect(m_markerList, SIGNAL(markerRenamed(int, QString)), this, SLOT(markerRenamed(int, QString)));
+    connect(m_markerList, SIGNAL(centerOnMarker(int)), this, SLOT(showMap()));
     m_stack->insertWidget(1, m_markerList);
 
     connect(m_dlWidget, SIGNAL(back()), this, SLOT(showMap()));
@@ -70,22 +101,6 @@ void MainWidget::markerAdded(const QString &name)
 void MainWidget::showMap()
 {
     m_stack->setCurrentIndex(0);
-}
-
-void MainWidget::centerOnMarker(int row)
-{
-    m_map->centerOnMarker(row);
-    m_stack->setCurrentIndex(0);
-}
-
-void MainWidget::removeMarker(int row)
-{
-    m_map->removeMarker(row);
-}
-
-void MainWidget::markerRenamed(int index, const QString &name)
-{
-    m_map->renameMarker(index, name);
 }
 
 void MainWidget::downloadArea(int level, const QRectF &rect)

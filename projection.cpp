@@ -17,36 +17,38 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef MAINWIDGET_H
-#define MAINWIDGET_H
+#include "projection.h"
 
-#include <QtGui/QListWidget>
-#include <QtGui/QStackedWidget>
-#include <QtGui/QWidget>
+#include <cmath>
 
-class DownloadWidget;
-class MapWidget;
-class MarkerList;
-
-class MainWidget : public QWidget
+qreal Projection::lon2rawx(qreal lon)
 {
-    Q_OBJECT
-public:
-    MainWidget(QWidget *parent = 0);
-    ~MainWidget();
+    return (lon + 180.0) / 360.0;
+}
+ 
+qreal Projection::lat2rawy(qreal lat)
+{
+    return (1.0 - log(tan(lat * M_PI/180.0) + 1.0 / cos(lat * M_PI/180.0)) / M_PI) / 2.0;
+}
 
-private slots:
-    void showList();
-    void markerAdded(const QString &name);
-    void showMap();
-    void downloadArea(int level, const QRectF &rect);
+qreal Projection::lon2tilex(qreal lon, int z)
+{
+    return (lon + 180.0) / 360.0 * (1 << z);
+}
+ 
+qreal Projection::lat2tiley(qreal lat, int z)
+{
+    return (1.0 - log(tan(lat * M_PI/180.0) + 1.0 / cos(lat * M_PI/180.0)) / M_PI) / 2.0 * (1 << z);
+}
+ 
+qreal Projection::tilex2lon(qreal x, int z)
+{
+    return x / (1 << z) * 360.0 - 180;
+}
+ 
+qreal Projection::tiley2lat(qreal y, int z)
+{
+    qreal n = M_PI - 2.0 * M_PI * y / (1 << z);
+    return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
+}
 
-private:
-    QStackedWidget *m_stack;
-    MapWidget *m_map;
-    MarkerList *m_markerList;
-    DownloadWidget *m_dlWidget;
-
-};
-
-#endif // MAINWIDGET_H

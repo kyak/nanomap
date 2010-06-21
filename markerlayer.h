@@ -17,36 +17,39 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef MAINWIDGET_H
-#define MAINWIDGET_H
+#ifndef MARKER_LAYER_H
+#define MARKER_LAYER_H
 
-#include <QtGui/QListWidget>
-#include <QtGui/QStackedWidget>
-#include <QtGui/QWidget>
+#include "abstractlayer.h"
 
-class DownloadWidget;
-class MapWidget;
-class MarkerList;
+#include <QtGui/QPainter>
 
-class MainWidget : public QWidget
+class MarkerLayer : public AbstractLayer
 {
     Q_OBJECT
 public:
-    MainWidget(QWidget *parent = 0);
-    ~MainWidget();
+    MarkerLayer(MapWidget *map);
+    ~MarkerLayer();
 
-private slots:
-    void showList();
+    virtual void load(const QString &filename);
+    virtual void triggerAction();
+
+protected:
+    virtual void paint(QPainter *painter);
+
+public slots:
+    void removeMarker(int index);
+    void renameMarker(int index, const QString &name);
+    void centerOnMarker(int index);
+
+signals:
     void markerAdded(const QString &name);
-    void showMap();
-    void downloadArea(int level, const QRectF &rect);
 
 private:
-    QStackedWidget *m_stack;
-    MapWidget *m_map;
-    MarkerList *m_markerList;
-    DownloadWidget *m_dlWidget;
+    QList<QPointF> m_markerPos;
+    QStringList m_markerName;
+    QString m_filename;
 
 };
 
-#endif // MAINWIDGET_H
+#endif // MARKER_LAYER_H
