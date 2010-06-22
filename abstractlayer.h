@@ -21,18 +21,10 @@
 #define ABSTRACT_LAYER_H
 
 #include <QtCore/QObject>
+#include <QtGui/QKeyEvent>
 #include <QtGui/QPainter>
 
 class MapWidget;
-
-enum Layer
-{
-    Tracks,
-    Marker,
-    Time,
-    System,
-    User
-};
 
 class AbstractLayer : public QObject
 {
@@ -44,6 +36,7 @@ public:
     virtual void zoom(int level);
     virtual void pan(const QPoint &move);
     virtual void triggerAction();
+    virtual void keyPressed(QKeyEvent *event);
 
     void paintLayer(QPainter *painter);
 

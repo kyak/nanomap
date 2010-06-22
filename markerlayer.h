@@ -33,6 +33,7 @@ public:
 
     virtual void load(const QString &filename);
     virtual void triggerAction();
+    virtual void keyPressed(QKeyEvent *event);
 
 protected:
     virtual void paint(QPainter *painter);

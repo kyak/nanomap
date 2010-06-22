@@ -17,31 +17,36 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef TIME_LAYER_H
-#define TIME_LAYER_H
+#ifndef GPS_LAYER_H
+#define GPS_LAYER_H
 
 #include "abstractlayer.h"
 
-#include <QtCore/QTimer>
 #include <QtGui/QPainter>
 
-class TimeLayer : public AbstractLayer
+class GpsClient;
+
+class GpsLayer : public AbstractLayer
 {
     Q_OBJECT
 public:
-    TimeLayer(MapWidget *map);
+    GpsLayer(MapWidget *map);
 
+    virtual void triggerAction();
     virtual void keyPressed(QKeyEvent *event);
 
 protected:
     virtual void paint(QPainter *painter);
 
 private slots:
-    void repaint();
+    void position(const QPointF &pos);
+    void connected();
+    void disconnected();
 
 private:
-    QTimer *m_updateTimer;
+    GpsClient *m_gps;
+    QPointF m_pos;
 
 };
 
-#endif // TIME_LAYER_H
+#endif // GPS_LAYER_H

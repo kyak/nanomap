@@ -24,6 +24,7 @@
 #include "markerlist.h"
 
 #include "batterylayer.h"
+#include "gpslayer.h"
 #include "gpxlayer.h"
 #include "markerlayer.h"
 #include "timelayer.h"
@@ -50,17 +51,17 @@ MainWidget::MainWidget(QWidget *parent)
 
     AbstractLayer *l = new TimeLayer(m_map);
     l->setVisible(false);
-    m_map->addLayer(Time, l);
+    m_map->addLayer(l, 4);
 
     l = new BatteryLayer(m_map);
     l->setVisible(false);
-    m_map->addLayer(System, l);
+    m_map->addLayer(l, 4);
 
-    l = new GpxLayer(m_map);
     if (fileName.endsWith(".gpx")) {
+        l = new GpxLayer(m_map);
         l->load(fileName);
+        m_map->addLayer(l, 2);
     }
-    m_map->addLayer(Tracks, l);
 
     l = new MarkerLayer(m_map);
     connect(l, SIGNAL(markerAdded(QString)), m_markerList, SLOT(addMarker(QString)));
@@ -68,7 +69,10 @@ MainWidget::MainWidget(QWidget *parent)
     connect(m_markerList, SIGNAL(removeMarker(int)), l, SLOT(removeMarker(int)));
     connect(m_markerList, SIGNAL(markerRenamed(int, QString)), l, SLOT(renameMarker(int, QString)));
     l->load(QDir::homePath()+"/Maps/marker.list");
-    m_map->addLayer(Marker, l);
+    m_map->addLayer(l, 3);
+
+    l = new GpsLayer(m_map);
+    m_map->addLayer(l, 1);
 
     connect(m_map, SIGNAL(showMarkerList()), this, SLOT(showList()));
     connect(m_map, SIGNAL(downloadArea(int, QRectF)), this, SLOT(downloadArea(int, QRectF)));

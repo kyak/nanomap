@@ -22,7 +22,7 @@
 
 #include "abstractlayer.h"
 
-#include <QtCore/QHash>
+#include <QtCore/QMap>
 #include <QtCore/QPoint>
 #include <QtGui/QWidget>
 #include <QtNetwork/QNetworkAccessManager>
@@ -34,7 +34,7 @@ public:
     MapWidget(QWidget *parent = 0);
     ~MapWidget();
 
-    void addLayer(Layer l, AbstractLayer *layer);
+    void addLayer(AbstractLayer *layer, int z);
 
     QRectF geoRect() const;
     QPointF geoPos() const;
@@ -89,7 +89,7 @@ private:
     QNetworkAccessManager *m_manager;
     bool m_networkMode;
     QString m_copyright;
-    QHash<Layer, AbstractLayer *> m_layer;
+    QMap<int, AbstractLayer *> m_layer;
 
 };
 

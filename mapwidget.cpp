@@ -131,9 +131,9 @@ MapWidget::~MapWidget()
     }
 }
 
-void MapWidget::addLayer(Layer l, AbstractLayer *layer)
+void MapWidget::addLayer(AbstractLayer *layer, int z)
 {
-    m_layer.insert(l, layer);
+    m_layer.insertMulti(z, layer);
 }
 
 void MapWidget::resizeEvent(QResizeEvent *event)
@@ -160,6 +160,8 @@ void MapWidget::resizeEvent(QResizeEvent *event)
 
 void MapWidget::mouseMoveEvent(QMouseEvent *event)
 {
+    event->accept();
+
     if (m_isMoving) {
         foreach (AbstractLayer *l, m_layer) {
             l->pan((event->pos() - m_startPos) - m_pos);
@@ -171,6 +173,8 @@ void MapWidget::mouseMoveEvent(QMouseEvent *event)
 
 void MapWidget::mousePressEvent(QMouseEvent *event)
 {
+    event->accept();
+
     if (m_ui && QRect(9, 14, 13, 13).contains(event->pos())) {
         changeZoomLevel(1);
         reloadPixmaps();
@@ -189,13 +193,15 @@ void MapWidget::mousePressEvent(QMouseEvent *event)
 
 void MapWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-    Q_UNUSED(event)
+    event->accept();
 
     m_isMoving = false;
 }
 
 void MapWidget::wheelEvent(QWheelEvent *event)
 {
+    event->accept();
+
     if (event->delta() < 0) {
         changeZoomLevel(-1);
         reloadPixmaps();
@@ -208,6 +214,8 @@ void MapWidget::wheelEvent(QWheelEvent *event)
 
 void MapWidget::keyPressEvent(QKeyEvent *event)
 {
+    event->accept();
+
     QPoint move;
     int width = 10;
     if (event->modifiers() & Qt::AltModifier) {
@@ -221,16 +229,9 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
             emit showMarkerList();
             break;
         }
-        case Qt::Key_M:
+        case Qt::Key_D:
         {
-            AbstractLayer *l = m_layer.value(Marker);
-            if (l) {
-                if (event->modifiers() & Qt::AltModifier) {
-                    l->toggleVisibility();
-                } else if (event->modifiers() == Qt::NoModifier) {
-                    l->triggerAction();
-                }
-            }
+            emit downloadArea(m_level, geoRect());
             break;
         }
         case Qt::Key_Up:
@@ -253,15 +254,6 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
             move = QPoint(-width, 0);
             break;
         }
-        case Qt::Key_C:
-        {
-            m_indexX = (m_minIndexX + m_maxIndexX) / 2;
-            m_indexY = (m_minIndexY + m_maxIndexY) / 2;
-            m_pos.setX(m_pixWidth/2);
-            m_pos.setY(m_pixHeight/2);
-            reloadPixmaps();
-            break;
-        }
         case Qt::Key_O:
         {
             changeZoomLevel(-1);
@@ -274,30 +266,14 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
             reloadPixmaps();
             break;
         }
-        case Qt::Key_D:
-        {
-            emit downloadArea(m_level, geoRect());
-            break;
-        }
         case Qt::Key_U:
         {
             m_ui = !m_ui;
             break;
         }
-        case Qt::Key_T:
+        case Qt::Key_H:
         {
-            AbstractLayer *l = m_layer.value(Time);
-            if (l) {
-                l->toggleVisibility();
-            }
-            break;
-        }
-        case Qt::Key_B:
-        {
-            AbstractLayer *l = m_layer.value(System);
-            if (l) {
-                l->toggleVisibility();
-            }
+            m_usage = !m_usage;
             break;
         }
         case Qt::Key_Q:
@@ -306,13 +282,12 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
             qApp->quit();
             break;
         }
-        case Qt::Key_Question:
-        case Qt::Key_H:
-        {
-            m_usage = !m_usage;
-            break;
-        }
     }
+
+    foreach (AbstractLayer *l, m_layer) {
+        l->keyPressed(event);
+    }
+
     m_pos += move;
     foreach (AbstractLayer *l, m_layer) {
         l->pan(move);
@@ -322,9 +297,7 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
 
 void MapWidget::paintEvent(QPaintEvent *event)
 {
-    Q_UNUSED(event)
-
-    AbstractLayer *l = 0;
+    event->accept();
 
     QPainter painter(this);
 
@@ -338,24 +311,10 @@ void MapWidget::paintEvent(QPaintEvent *event)
         }
     }
 
-    l = m_layer.value(Tracks);
-    if (l) {
-        l->paintLayer(&painter);
-    }
-
-    l = m_layer.value(Marker);
-    if (l) {
-        l->paintLayer(&painter);
-    }
-
-    l = m_layer.value(Time);
-    if (l) {
-        l->paintLayer(&painter);
-    }
-
-    l = m_layer.value(System);
-    if (l) {
-        l->paintLayer(&painter);
+    QMapIterator<int, AbstractLayer *> i(m_layer);
+    while (i.hasNext()) {
+        i.next();
+        i.value()->paintLayer(&painter);
     }
 
     if (m_ui) {
@@ -395,7 +354,6 @@ void MapWidget::paintEvent(QPaintEvent *event)
         usage << "Esc: Quit application";
         usage << "h: Show/hide this message";
         usage << "Arrows: Move the map";
-        //usage << "c: Move to the center of the map";
         if (m_zoomable) {
             usage << "i: Zoom in";
             usage << "o: Zoom out";

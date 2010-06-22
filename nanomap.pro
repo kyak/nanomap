@@ -7,6 +7,7 @@ SOURCES += main.cpp \
             mainwidget.cpp \
             projection.cpp \
             abstractlayer.cpp \
+            gpslayer.cpp \
             markerlayer.cpp \
             gpxlayer.cpp \
             timelayer.cpp \
@@ -19,6 +20,7 @@ SOURCES += main.cpp \
 HEADERS += mainwidget.h \
             projection.h \
             abstractlayer.h \
+            gpslayer.h \
             markerlayer.h \
             gpxlayer.h \
             timelayer.h \

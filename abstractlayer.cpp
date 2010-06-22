@@ -47,6 +47,11 @@ void AbstractLayer::triggerAction()
 {
 }
 
+void AbstractLayer::keyPressed(QKeyEvent *event)
+{
+    Q_UNUSED(event)
+}
+
 void AbstractLayer::paintLayer(QPainter *painter)
 {
     if (m_visible) {

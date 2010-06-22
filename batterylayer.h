@@ -31,6 +31,8 @@ class BatteryLayer : public AbstractLayer
 public:
     BatteryLayer(MapWidget *map);
 
+    virtual void keyPressed(QKeyEvent *event);
+
 protected:
     virtual void paint(QPainter *painter);
 

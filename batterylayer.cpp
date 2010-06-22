@@ -45,6 +45,14 @@ BatteryLayer::BatteryLayer(MapWidget *map) :
     repaint();
 }
 
+void BatteryLayer::keyPressed(QKeyEvent *event)
+{
+    if (event->modifiers() == Qt::NoModifier &&
+        event->key() == Qt::Key_B) {
+        toggleVisibility();
+    }
+}
+
 void BatteryLayer::paint(QPainter *painter)
 {
     int w = map()->width();

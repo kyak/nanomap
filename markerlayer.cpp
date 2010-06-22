@@ -73,6 +73,17 @@ void MarkerLayer::triggerAction()
     emit markerAdded(newName);
 }
 
+void MarkerLayer::keyPressed(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_M) {
+        if (event->modifiers() == Qt::NoModifier) {
+            triggerAction();
+        } else if (event->modifiers() == Qt::AltModifier) {
+            toggleVisibility();
+        }
+    }
+}
+
 void MarkerLayer::paint(QPainter *painter)
 {
     int i = 0;

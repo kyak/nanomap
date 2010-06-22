@@ -34,6 +34,14 @@ TimeLayer::TimeLayer(MapWidget *map) :
     QTimer::singleShot(time, m_updateTimer, SLOT(start()));
 }
 
+void TimeLayer::keyPressed(QKeyEvent *event)
+{
+    if (event->modifiers() == Qt::NoModifier &&
+        event->key() == Qt::Key_T) {
+        toggleVisibility();
+    }
+}
+
 void TimeLayer::paint(QPainter *painter)
 {
     int w = map()->width();
