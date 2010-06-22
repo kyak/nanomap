@@ -1,5 +1,5 @@
 /*
- * Copyright 2008  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2008, 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include "gpsclient.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QStringList>
 #include <QtCore/QTimer>
 
 GpsClient::GpsClient(QObject *parent) : QObject(parent),
@@ -38,30 +39,44 @@ void GpsClient::connectGps()
 
 void GpsClient::disconnectGps()
 {
-    m_socket->disconnectFromHost();
-}
-
-void GpsClient::query()
-{
     QTextStream out(m_socket);
-    out << "p\n";
+    out << "?WATCH={\"enable\":false}\n";
+    m_socket->disconnectFromHost();
 }
 
 void GpsClient::readData()
 {
     QTextStream in(m_socket);
     QString reply = in.readLine();
-    reply.remove(0, 7);
-    if (reply != "?") {
-        float lat = reply.section(' ', 0, 0).toFloat();
-        float lon = reply.section(' ', 1, 1).toFloat();
-        emit position(QPointF(lon, lat));
+    if (reply.contains("TPV")) {
+        reply.remove("{");
+        reply.remove("}");
+        qreal lat = 0;
+        qreal lon = 0;
+        int mode = 0;
+        QStringList entries = reply.split(",");
+        foreach (const QString &entry, entries) {
+            if (entry.contains("lat")) {
+                lat = entry.section(":", 1, 1).toDouble();
+            } else if (entry.contains("lon")) {
+                lon = entry.section(":", 1, 1).toDouble();
+            } else if (entry.contains("mode")) {
+                // 0: no mode value yet seen
+                // 1: no fix
+                // 2: 2D
+                // 3: 3D
+                mode = entry.section(":", 1, 1).toInt();
+            }
+        }
+        if (mode > 1) {
+            emit position(QPointF(lon, lat));
+        }
     }
-    QTimer::singleShot(1000, this, SLOT(query()));
 }
 
 void GpsClient::conn()
 {
-    QTimer::singleShot(1000, this, SLOT(query()));
+    QTextStream out(m_socket);
+    out << "?WATCH={\"enable\":true,\"json\":true}\n";
 }
 

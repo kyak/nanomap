@@ -1,5 +1,5 @@
 /*
- * Copyright 2008  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2008, 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,6 @@ signals:
     void disconnected();
 
 private slots:
-    void query();
     void readData();
     void conn();
 
@@ -49,4 +48,4 @@ private:
 
 };
 
-#endif
+#endif // GPSCLIENT_H
