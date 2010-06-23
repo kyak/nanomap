@@ -38,9 +38,10 @@ protected:
 
 private slots:
     void repaint();
-    void fileChanged(const QString &filename);
 
 private:
+    bool reload();
+
     QTimer *m_updateTimer;
     int m_percent;
     bool m_isCharging;

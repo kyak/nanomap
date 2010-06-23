@@ -23,7 +23,6 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
-//#include <QtCore/QFileSystemWatcher>
 #include <QtCore/QTextStream>
 #include <QtCore/QTime>
 
@@ -37,12 +36,7 @@ BatteryLayer::BatteryLayer(MapWidget *map) :
     connect(m_updateTimer, SIGNAL(timeout()), this, SLOT(repaint()));
     m_updateTimer->start();
 
-//    QFileSystemWatcher *w = new QFileSystemWatcher(this);
-//    w->addPath("/sys/class/power_supply/battery/capacity");
-//    w->addPath("/sys/class/power_supply/battery/status");
-//    connect(w, SIGNAL(fileChanged(QString)), this, SLOT(fileChanged(QString)));
-
-    repaint();
+    reload();
 }
 
 void BatteryLayer::keyPressed(QKeyEvent *event)
@@ -50,6 +44,7 @@ void BatteryLayer::keyPressed(QKeyEvent *event)
     if (event->modifiers() == Qt::NoModifier &&
         event->key() == Qt::Key_B) {
         toggleVisibility();
+        reload();
     }
 }
 
@@ -72,33 +67,37 @@ void BatteryLayer::paint(QPainter *painter)
 void BatteryLayer::repaint()
 {
     if (isVisible()) {
-        int percent = m_percent;
-        QFile capacity("/sys/class/power_supply/battery/capacity");
-        if (capacity.open(QFile::ReadOnly | QFile::Text)) {
-            QTextStream in(&capacity);
-            QString l = in.readLine();
-            percent = l.toInt();
-        }
-
-        bool charging = m_isCharging;
-        QFile status("/sys/class/power_supply/battery/status");
-        if (status.open(QFile::ReadOnly | QFile::Text)) {
-            QTextStream in(&status);
-            QString l = in.readLine().toLower();
-            charging = (l == "charging");
-        }
-
-        if (charging != m_isCharging || percent != m_percent) {
-            m_percent = percent;
-            m_isCharging = charging;
+        if (reload()) {
             map()->update();
         }
     }
 }
 
-void BatteryLayer::fileChanged(const QString &filename)
+bool BatteryLayer::reload()
 {
-    qDebug() << filename;
-    repaint();
+    int percent = m_percent;
+    QFile capacity("/sys/class/power_supply/battery/capacity");
+    if (capacity.open(QFile::ReadOnly | QFile::Text)) {
+        QTextStream in(&capacity);
+        QString l = in.readLine();
+        percent = l.toInt();
+    }
+
+    bool charging = m_isCharging;
+    QFile status("/sys/class/power_supply/battery/status");
+    if (status.open(QFile::ReadOnly | QFile::Text)) {
+        QTextStream in(&status);
+        QString l = in.readLine().toLower();
+        charging = (l == "charging");
+    }
+
+    if (charging != m_isCharging || percent != m_percent) {
+        m_isCharging = charging;
+        m_percent = percent;
+
+        return true;
+    } else {
+        return false;
+    }
 }
 
