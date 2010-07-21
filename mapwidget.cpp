@@ -43,6 +43,8 @@ MapWidget::MapWidget(QWidget *parent)
     m_usage(false),
     m_ui(true),
     m_zoomable(false),
+    m_takeScreenshot(false),
+    m_screenshotNumber(0),
     m_baseName(),
     m_xPadding(0),
     m_yPadding(0),
@@ -276,6 +278,13 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
             m_usage = !m_usage;
             break;
         }
+        case Qt::Key_S:
+        {
+            if (event->modifiers() == Qt::AltModifier) {
+                m_takeScreenshot = true;
+            }
+            break;
+        }
         case Qt::Key_Q:
         case Qt::Key_Escape:
         {
@@ -299,7 +308,14 @@ void MapWidget::paintEvent(QPaintEvent *event)
 {
     event->accept();
 
-    QPainter painter(this);
+    QImage screenshot(width(), height(), QImage::Format_ARGB32);
+
+    QPainter painter;
+    if (m_takeScreenshot) {
+        painter.begin(&screenshot);
+    } else {
+        painter.begin(this);
+    }
 
     for (int x = 0; x < m_cols; ++x) {
         for (int y = 0; y < m_rows; ++y) {
@@ -374,6 +390,12 @@ void MapWidget::paintEvent(QPaintEvent *event)
     }
 
     painter.end();
+    if (m_takeScreenshot) {
+        screenshot.save(QString("NanoMap-%1.png").arg(m_screenshotNumber));
+        m_takeScreenshot = false;
+        ++m_screenshotNumber;
+        update();
+    }
 }
 
 void MapWidget::replyFinished(QNetworkReply *reply)

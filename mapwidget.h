@@ -72,6 +72,8 @@ private:
     void changeZoomLevel(int diff);
 
     bool m_usage, m_ui, m_zoomable;
+    bool m_takeScreenshot;
+    int m_screenshotNumber;
     QString m_baseName;
     int m_xPadding, m_yPadding;
     QPoint m_pos, m_startPos;
