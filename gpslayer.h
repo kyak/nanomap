@@ -40,12 +40,16 @@ protected:
 
 private slots:
     void position(const QPointF &pos);
+    void altitude(qreal alt);
+    void direction(qreal track);
+    void speed(qreal speed);
     void connected();
     void disconnected();
 
 private:
     GpsClient *m_gps;
     QPointF m_pos;
+    qreal m_alt, m_track, m_speed;
 
 };
 

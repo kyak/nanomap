@@ -27,10 +27,16 @@
 GpsLayer::GpsLayer(MapWidget *map) :
     AbstractLayer(map),
     m_gps(new GpsClient(this)),
-    m_pos(QPointF(9.8, 54))
+    m_pos(QPointF(9.8, 54)),
+    m_alt(0),
+    m_track(0),
+    m_speed(0)
 {
     setVisible(false);
     connect(m_gps, SIGNAL(position(QPointF)), this, SLOT(position(QPointF)));
+    connect(m_gps, SIGNAL(altitude(qreal)), this, SLOT(altitude(qreal)));
+    connect(m_gps, SIGNAL(direction(qreal)), this, SLOT(direction(qreal)));
+    connect(m_gps, SIGNAL(speed(qreal)), this, SLOT(speed(qreal)));
     connect(m_gps, SIGNAL(connected()), this, SLOT(connected()));
     connect(m_gps, SIGNAL(disconnected()), this, SLOT(disconnected()));
     m_gps->connectGps();
@@ -55,15 +61,46 @@ void GpsLayer::paint(QPainter *painter)
 {
     QPoint pos = map()->geo2screen(m_pos.x(), m_pos.y());
 
-    painter->drawPoint(pos);
     painter->setRenderHint(QPainter::Antialiasing, true);
-    painter->setPen(QPen(QBrush(QColor(0, 0, 255, 110)), 4));
+    painter->setPen(QPen(QColor(0, 0, 255, 110), 4));
     painter->drawEllipse(pos, 8, 8);
+
+    painter->setPen(QPen(QColor(0, 0, 255, 210), 2, Qt::SolidLine, Qt::RoundCap, Qt::MiterJoin));
+    painter->translate(pos);
+    painter->rotate(m_track);
+    painter->drawLine(QPoint(4, 3), QPoint(0, -7));
+    painter->drawLine(QPoint(-4, 3), QPoint(0, -7));
+    painter->drawLine(QPoint(4, 3), QPoint(0, 0));
+    painter->drawLine(QPoint(-4, 3), QPoint(0, 0));
 }
 
 void GpsLayer::position(const QPointF &pos)
 {
     m_pos = pos;
+    if (isVisible()) {
+        map()->update();
+    }
+}
+
+void GpsLayer::altitude(qreal alt)
+{
+    m_alt = alt;
+    if (isVisible()) {
+        map()->update();
+    }
+}
+
+void GpsLayer::direction(qreal track)
+{
+    m_track = track;
+    if (isVisible()) {
+        map()->update();
+    }
+}
+
+void GpsLayer::speed(qreal speed)
+{
+    m_speed = speed;
     if (isVisible()) {
         map()->update();
     }
