@@ -36,6 +36,9 @@ public slots:
 
 signals:
     void position(const QPointF &pos);
+    void altitude(qreal alt);
+    void direction(qreal track);
+    void speed(qreal speed);
     void connected();
     void disconnected();
 

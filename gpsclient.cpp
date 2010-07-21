@@ -60,6 +60,15 @@ void GpsClient::readData()
                 lat = entry.section(":", 1, 1).toDouble();
             } else if (entry.contains("lon")) {
                 lon = entry.section(":", 1, 1).toDouble();
+            } else if (entry.contains("alt")) {
+                qreal alt = entry.section(":", 1, 1).toDouble();
+                emit altitude(alt);
+            } else if (entry.contains("track")) {
+                qreal track = entry.section(":", 1, 1).toDouble();
+                emit direction(track);
+            } else if (entry.contains("speed")) {
+                qreal currentSpeed = entry.section(":", 1, 1).toDouble();
+                emit speed(currentSpeed);
             } else if (entry.contains("mode")) {
                 // 0: no mode value yet seen
                 // 1: no fix
