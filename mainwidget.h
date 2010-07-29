@@ -27,6 +27,7 @@
 class DownloadWidget;
 class MapWidget;
 class MarkerList;
+class RoutingWidget;
 
 class MainWidget : public QWidget
 {
@@ -40,12 +41,14 @@ private slots:
     void markerAdded(const QString &name);
     void showMap();
     void downloadArea(int level, const QRectF &rect);
+    void findRoute(const QPointF &from, const QPointF &to);
 
 private:
     QStackedWidget *m_stack;
     MapWidget *m_map;
     MarkerList *m_markerList;
     DownloadWidget *m_dlWidget;
+    RoutingWidget *m_routingWidget;
 
 };
 

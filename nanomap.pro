@@ -15,6 +15,7 @@ SOURCES += main.cpp \
             mapwidget.cpp \
             markerlist.cpp \
             downloadwidget.cpp \
+            routingwidget.cpp \
             gpsclient.cpp
 
 HEADERS += mainwidget.h \
@@ -28,4 +29,5 @@ HEADERS += mainwidget.h \
             mapwidget.h \
             markerlist.h \
             downloadwidget.h \
+            routingwidget.h \
             gpsclient.h

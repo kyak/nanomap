@@ -40,6 +40,8 @@
 
 MapWidget::MapWidget(QWidget *parent)
     : QWidget(parent),
+    m_routeStart(),
+    m_routeEnd(),
     m_usage(false),
     m_ui(true),
     m_zoomable(false),
@@ -278,11 +280,23 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
             m_usage = !m_usage;
             break;
         }
+        case Qt::Key_R:
+        {
+            emit route(m_routeStart, m_routeEnd);
+            break;
+        }
         case Qt::Key_S:
         {
             if (event->modifiers() == Qt::AltModifier) {
                 m_takeScreenshot = true;
+            } else if (event->modifiers() == Qt::NoModifier) {
+                m_routeStart = geoPos();
             }
+            break;
+        }
+        case Qt::Key_E:
+        {
+            m_routeEnd = geoPos();
             break;
         }
         case Qt::Key_Q:
@@ -327,6 +341,19 @@ void MapWidget::paintEvent(QPaintEvent *event)
         }
     }
 
+    painter.save();
+    QPoint p = geo2screen(m_routeStart.x(), m_routeStart.y());
+    QPolygon tri;
+    tri << p << p+QPoint(-5, -9) << p+QPoint(5, -9) << p;
+    painter.setBrush(Qt::red);
+    painter.drawPolygon(tri);
+    p = geo2screen(m_routeEnd.x(), m_routeEnd.y());
+    tri.clear();
+    tri << p << p+QPoint(-5, -9) << p+QPoint(5, -9) << p;
+    painter.setBrush(Qt::blue);
+    painter.drawPolygon(tri);
+    painter.restore();
+
     QMapIterator<int, AbstractLayer *> i(m_layer);
     while (i.hasNext()) {
         i.next();
@@ -337,10 +364,8 @@ void MapWidget::paintEvent(QPaintEvent *event)
         painter.setBrush(QBrush(QColor(255, 255, 255, 210)));
         if (m_networkMode) {
             painter.drawRoundedRect(30, height() - 17, width() - 145, 16, 5, 5);
-            QPointF geo = geoPos();
-            QString lon = geo.x() > 0 ? QString("E %1").arg(geo.x()) : QString("W %1").arg(-geo.x());
-            QString lat = geo.y() > 0 ? QString("N %1").arg(geo.y()) : QString("S %1").arg(-geo.y());
-            painter.drawText(35, height() - 15, width() - 155, 14, Qt::AlignCenter, lat+" "+lon);
+            painter.drawText(35, height() - 15, width() - 155, 14, Qt::AlignCenter,
+                             Projection::geo2string(geoPos()));
         }
         if (m_zoomable) {
             painter.drawRoundedRect(5, 10, 20, 220, 10, 10);

@@ -52,3 +52,10 @@ qreal Projection::tiley2lat(qreal y, int z)
     return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
 }
 
+QString Projection::geo2string(const QPointF &geo)
+{
+    QString lat = geo.y() > 0 ? QString("N %1").arg(geo.y()) : QString("S %1").arg(-geo.y());
+    QString lon = geo.x() > 0 ? QString("E %1").arg(geo.x()) : QString("W %1").arg(-geo.x());
+    return lat+" "+lon;
+}
+

@@ -47,6 +47,7 @@ public slots:
 signals:
     void showMarkerList();
     void downloadArea(int level, const QRectF &rect);
+    void route(const QPointF &from, const QPointF &to);
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);
@@ -71,6 +72,7 @@ private:
     void downloadTile(int x, int y, int level);
     void changeZoomLevel(int diff);
 
+    QPointF m_routeStart, m_routeEnd;
     bool m_usage, m_ui, m_zoomable;
     bool m_takeScreenshot;
     int m_screenshotNumber;

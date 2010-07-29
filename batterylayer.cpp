@@ -24,7 +24,6 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
-#include <QtCore/QTime>
 
 BatteryLayer::BatteryLayer(MapWidget *map) :
     AbstractLayer(map),

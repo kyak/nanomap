@@ -17,21 +17,42 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef PROJECTION_H
-#define PROJECTION_H
+#ifndef ROUTINGWIDGET_H
+#define ROUTINGWIDGET_H
 
-#include <QtCore/QObject>
-#include <QtCore/QPointF>
+#include <QtGui/QComboBox>
+#include <QtGui/QLabel>
+#include <QtGui/QLineEdit>
+#include <QtGui/QRadioButton>
+#include <QtGui/QWidget>
 
-namespace Projection
+class RoutingWidget : public QWidget
 {
-    qreal lon2rawx(qreal lon);
-    qreal lat2rawy(qreal lat);
-    qreal lon2tilex(qreal lon, int z);
-    qreal lat2tiley(qreal lat, int z);
-    qreal tilex2lon(qreal x, int z);
-    qreal tiley2lat(qreal y, int z);
-    QString geo2string(const QPointF &geo);
+    Q_OBJECT
+public:
+    RoutingWidget(QWidget *parent = 0);
+    ~RoutingWidget();
+
+    void setFrom(const QPointF &from);
+    void setTo(const QPointF &to);
+
+signals:
+    void back();
+
+private slots:
+    void findRoute();
+
+private:
+    void loadConfig();
+
+    QLineEdit *m_name;
+    QComboBox *m_transport;
+    QRadioButton *m_quickest;
+    QRadioButton *m_shortest;
+    QString m_routino, m_dir, m_prefix, m_profiles, m_swap;
+    QPointF m_from, m_to;
+    QLabel *m_fromLabel, *m_toLabel;
+ 
 };
 
-#endif // PROJECTION_H
+#endif // ROUTINGWIDGET_H
