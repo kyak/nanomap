@@ -36,6 +36,11 @@ public:
     MainWidget(QWidget *parent = 0);
     ~MainWidget();
 
+    void loadGpx(const QString &fileName);
+
+signals:
+    void close();
+
 private slots:
     void showList();
     void markerAdded(const QString &name);

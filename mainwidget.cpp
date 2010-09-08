@@ -42,11 +42,6 @@ MainWidget::MainWidget(QWidget *parent)
     m_dlWidget(new DownloadWidget(this)),
     m_routingWidget(new RoutingWidget(this))
 {
-    QString fileName;
-    if (QApplication::arguments().count() > 1) {
-        fileName = QApplication::arguments().at(1);
-    }
-
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_stack);
@@ -59,12 +54,6 @@ MainWidget::MainWidget(QWidget *parent)
     l->setVisible(false);
     m_map->addLayer(l, 4);
 
-    if (fileName.endsWith(".gpx")) {
-        l = new GpxLayer(m_map);
-        l->load(fileName);
-        m_map->addLayer(l, 2);
-    }
-
     l = new MarkerLayer(m_map);
     connect(l, SIGNAL(markerAdded(QString)), m_markerList, SLOT(addMarker(QString)));
     connect(m_markerList, SIGNAL(centerOnMarker(int)), l, SLOT(centerOnMarker(int)));
@@ -76,6 +65,7 @@ MainWidget::MainWidget(QWidget *parent)
     l = new GpsLayer(m_map);
     m_map->addLayer(l, 1);
 
+    connect(m_map, SIGNAL(close()), this, SIGNAL(close()));
     connect(m_map, SIGNAL(showMarkerList()), this, SLOT(showList()));
     connect(m_map, SIGNAL(downloadArea(int, QRectF)), this, SLOT(downloadArea(int, QRectF)));
     connect(m_map, SIGNAL(route(QPointF, QPointF)), this, SLOT(findRoute(QPointF, QPointF)));
@@ -96,6 +86,15 @@ MainWidget::MainWidget(QWidget *parent)
 
 MainWidget::~MainWidget()
 {
+}
+
+void MainWidget::loadGpx(const QString &fileName)
+{
+    if (fileName.endsWith(".gpx")) {
+        AbstractLayer *l = new GpxLayer(m_map);
+        l->load(fileName);
+        m_map->addLayer(l, 2);
+    }
 }
 
 void MainWidget::showList()

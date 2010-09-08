@@ -24,7 +24,16 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
     MainWidget w;
+
+    if (QApplication::arguments().count() > 1) {
+        w.loadGpx(QApplication::arguments().at(1));
+    }
+
+    QObject::connect(&w, SIGNAL(close()), &a, SLOT(quit()));
     w.show();
+
     return a.exec();
 }
+
