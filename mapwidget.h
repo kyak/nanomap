@@ -45,6 +45,7 @@ public slots:
     void centerOnGeoPos(qreal lon, qreal lat);
 
 signals:
+    void close();
     void showMarkerList();
     void downloadArea(int level, const QRectF &rect);
     void route(const QPointF &from, const QPointF &to);

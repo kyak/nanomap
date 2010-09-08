@@ -222,20 +222,24 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
 
     QPoint move;
     int width = 10;
-    if (event->modifiers() & Qt::AltModifier) {
+    if (event->modifiers() == Qt::AltModifier) {
         width = 100;
-    } else if (event->modifiers() & Qt::ShiftModifier) {
+    } else if (event->modifiers() == Qt::ShiftModifier) {
         width = 1;
     }
     switch (event->key()) {
         case Qt::Key_Tab:
         {
-            emit showMarkerList();
+            if (event->modifiers() == Qt::NoModifier) {
+                emit showMarkerList();
+            }
             break;
         }
         case Qt::Key_D:
         {
-            emit downloadArea(m_level, geoRect());
+            if (event->modifiers() == Qt::NoModifier) {
+                emit downloadArea(m_level, geoRect());
+            }
             break;
         }
         case Qt::Key_Up:
@@ -260,29 +264,39 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
         }
         case Qt::Key_O:
         {
-            changeZoomLevel(-1);
-            reloadPixmaps();
+            if (event->modifiers() == Qt::NoModifier) {
+                changeZoomLevel(-1);
+                reloadPixmaps();
+            }
             break;
         }
         case Qt::Key_I:
         {
-            changeZoomLevel(1);
-            reloadPixmaps();
+            if (event->modifiers() == Qt::NoModifier) {
+                changeZoomLevel(1);
+                reloadPixmaps();
+            }
             break;
         }
         case Qt::Key_U:
         {
-            m_ui = !m_ui;
+            if (event->modifiers() == Qt::NoModifier) {
+                m_ui = !m_ui;
+            }
             break;
         }
         case Qt::Key_H:
         {
-            m_usage = !m_usage;
+            if (event->modifiers() == Qt::NoModifier) {
+                m_usage = !m_usage;
+            }
             break;
         }
         case Qt::Key_R:
         {
-            emit route(m_routeStart, m_routeEnd);
+            if (event->modifiers() == Qt::NoModifier) {
+                emit route(m_routeStart, m_routeEnd);
+            }
             break;
         }
         case Qt::Key_S:
@@ -296,13 +310,17 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
         }
         case Qt::Key_E:
         {
-            m_routeEnd = geoPos();
+            if (event->modifiers() == Qt::NoModifier) {
+                m_routeEnd = geoPos();
+            }
             break;
         }
         case Qt::Key_Q:
         case Qt::Key_Escape:
         {
-            qApp->quit();
+            if (event->modifiers() == Qt::NoModifier) {
+                emit close();
+            }
             break;
         }
     }
@@ -331,6 +349,7 @@ void MapWidget::paintEvent(QPaintEvent *event)
         painter.begin(this);
     }
 
+    painter.setPen(Qt::black);
     for (int x = 0; x < m_cols; ++x) {
         for (int y = 0; y < m_rows; ++y) {
             QPixmap *pix = m_pix[x][y];
