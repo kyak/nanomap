@@ -40,7 +40,8 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     m_right(new QLabel("E 0", this)),
     m_bottom(new QLabel("N 0", this)),
     m_levelSpinBox(new QSpinBox(this)),
-    m_dlProgress(new QProgressBar(this))
+    m_dlProgress(new QProgressBar(this)),
+    m_skipExisting(new QCheckBox("S&kip already downloaded tiles", this))
 {
     QGridLayout *layout = new QGridLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -65,16 +66,19 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     m_levelSpinBox->setRange(0, 18);
     layout->addWidget(m_levelSpinBox, 3, 2, 1, 2);
 
+    m_skipExisting->setChecked(false);
+    layout->addWidget(m_skipExisting, 4, 0, 1, 0);
+
     m_dlProgress->setFormat("%v / %m");
-    layout->addWidget(m_dlProgress, 4, 0, 1, 4);
+    layout->addWidget(m_dlProgress, 5, 0, 1, 4);
 
     QPushButton *start = new QPushButton("&Start", this);
     connect(start, SIGNAL(clicked()), this, SLOT(startDownload()));
-    layout->addWidget(start, 5, 0, 1, 2);
+    layout->addWidget(start, 6, 0, 1, 2);
 
     QPushButton *back = new QPushButton("&Back", this);
     connect(back, SIGNAL(clicked()), this, SIGNAL(back()));
-    layout->addWidget(back, 5, 2, 1, 2);
+    layout->addWidget(back, 6, 2, 1, 2);
 
     connect(m_manager, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(replyFinished(QNetworkReply*)));
@@ -144,9 +148,16 @@ void DownloadWidget::replyFinished(QNetworkReply *reply)
                 file.write(data);
             }
         }
-        if (!m_dlList.isEmpty()) {
+        while (!m_dlList.isEmpty()) {
             QUrl url(m_dlList.takeFirst());
-            m_manager->get(QNetworkRequest(url));
+            if (QFile::exists(QDir::homePath()+"/Maps/OSM"+url.path()) &&
+                m_skipExisting->isChecked()) {	    	    
+                int n = m_dlProgress->value();
+                m_dlProgress->setValue(n+1);
+            } else {
+                m_manager->get(QNetworkRequest(url));
+                break;
+            }
         }
         int n = m_dlProgress->value();
         m_dlProgress->setValue(n+1);

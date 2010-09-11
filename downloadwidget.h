@@ -20,6 +20,7 @@
 #ifndef DOWNLOADWIDGET_H
 #define DOWNLOADWIDGET_H
 
+#include <QtGui/QCheckBox>
 #include <QtGui/QLabel>
 #include <QtGui/QProgressBar>
 #include <QtGui/QSpinBox>
@@ -56,6 +57,7 @@ private:
     QLabel *m_up, *m_left, *m_right, *m_bottom;
     QSpinBox *m_levelSpinBox;
     QProgressBar *m_dlProgress;
+    QCheckBox *m_skipExisting;
 
 };
 
