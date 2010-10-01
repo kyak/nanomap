@@ -73,7 +73,8 @@ MapWidget::MapWidget(QWidget *parent)
     m_manager(new QNetworkAccessManager(this)),
     m_networkMode(false),
     m_copyright(),
-    m_layer()
+    m_layer(),
+    m_layerMenu(new QMenu(this))
 {
     for (int x = 0; x < 100; ++x) {
         for (int y = 0; y < 100; ++y) {
@@ -135,8 +136,14 @@ MapWidget::~MapWidget()
     }
 }
 
-void MapWidget::addLayer(AbstractLayer *layer, int z)
+void MapWidget::addLayer(AbstractLayer *layer, int z, const QString &name)
 {
+    QAction *action = new QAction(name, m_layerMenu);
+    action->setCheckable(true);
+    action->setChecked(layer->isVisible());
+    connect(action, SIGNAL(triggered(bool)), layer, SLOT(setVisible(bool)));
+    connect(layer, SIGNAL(visibilityChanged(bool)), action, SLOT(setChecked(bool)));
+    m_layerMenu->addAction(action);
     m_layer.insertMulti(z, layer);
 }
 
@@ -315,6 +322,13 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
             }
             break;
         }
+        case Qt::Key_L:
+        {
+            if (event->modifiers() == Qt::NoModifier) {
+                m_layerMenu->popup(mapToGlobal(QPoint(0, 0)));
+            }
+            break;
+        }
         case Qt::Key_Q:
         case Qt::Key_Escape:
         {
@@ -420,7 +434,7 @@ void MapWidget::paintEvent(QPaintEvent *event)
         }
         usage << "u: Show/hide user interface";
         usage << "m: Add a marker";
-        usage << "Alt+m: Show/hide all marker";
+        usage << "l: Show/hide individual layers";
         usage << "tab: Show/hide marker list";
         if (m_networkMode) {
             usage << "d: Download tiles for visible area";

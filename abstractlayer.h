@@ -40,12 +40,17 @@ public:
 
     void paintLayer(QPainter *painter);
 
-    MapWidget *map() const;
     bool isVisible() const;
+
+public slots:
     void setVisible(bool visible = true);
     void toggleVisibility();
 
+signals:
+    void visibilityChanged(bool visible);
+
 protected:
+    MapWidget *map() const;
     virtual void paint(QPainter *painter) = 0;
 
 private:

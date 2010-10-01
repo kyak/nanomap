@@ -24,6 +24,7 @@
 
 #include <QtCore/QMap>
 #include <QtCore/QPoint>
+#include <QtGui/QMenu>
 #include <QtGui/QWidget>
 #include <QtNetwork/QNetworkAccessManager>
 
@@ -34,7 +35,7 @@ public:
     MapWidget(QWidget *parent = 0);
     ~MapWidget();
 
-    void addLayer(AbstractLayer *layer, int z);
+    void addLayer(AbstractLayer *layer, int z, const QString &name);
 
     QRectF geoRect() const;
     QPointF geoPos() const;
@@ -95,6 +96,7 @@ private:
     bool m_networkMode;
     QString m_copyright;
     QMap<int, AbstractLayer *> m_layer;
+    QMenu *m_layerMenu;
 
 };
 

@@ -74,10 +74,12 @@ bool AbstractLayer::isVisible() const
 void AbstractLayer::setVisible(bool visible)
 {
     m_visible = visible;
+    emit visibilityChanged(m_visible);
 }
 
 void AbstractLayer::toggleVisibility()
 {
     m_visible = !m_visible;
+    emit visibilityChanged(m_visible);
 }
 

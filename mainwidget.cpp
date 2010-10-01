@@ -48,11 +48,11 @@ MainWidget::MainWidget(QWidget *parent)
 
     AbstractLayer *l = new TimeLayer(m_map);
     l->setVisible(false);
-    m_map->addLayer(l, 4);
+    m_map->addLayer(l, 4, "Time");
 
     l = new BatteryLayer(m_map);
     l->setVisible(false);
-    m_map->addLayer(l, 4);
+    m_map->addLayer(l, 4, "Battery");
 
     l = new MarkerLayer(m_map);
     connect(l, SIGNAL(markerAdded(QString)), m_markerList, SLOT(addMarker(QString)));
@@ -60,10 +60,10 @@ MainWidget::MainWidget(QWidget *parent)
     connect(m_markerList, SIGNAL(removeMarker(int)), l, SLOT(removeMarker(int)));
     connect(m_markerList, SIGNAL(markerRenamed(int, QString)), l, SLOT(renameMarker(int, QString)));
     l->load(QDir::homePath()+"/Maps/marker.list");
-    m_map->addLayer(l, 3);
+    m_map->addLayer(l, 3, "Marker");
 
     l = new GpsLayer(m_map);
-    m_map->addLayer(l, 1);
+    m_map->addLayer(l, 1, "GPS-Position");
 
     connect(m_map, SIGNAL(close()), this, SIGNAL(close()));
     connect(m_map, SIGNAL(showMarkerList()), this, SLOT(showList()));
@@ -93,7 +93,7 @@ void MainWidget::loadGpx(const QString &fileName)
     if (fileName.endsWith(".gpx")) {
         AbstractLayer *l = new GpxLayer(m_map);
         l->load(fileName);
-        m_map->addLayer(l, 2);
+        m_map->addLayer(l, 2, "GPS-Track");
     }
 }
 
