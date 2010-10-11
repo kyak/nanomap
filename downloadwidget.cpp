@@ -69,7 +69,7 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     layout->addWidget(m_levelSpinBox, 3, 2, 1, 2);
 
     label = new QLabel("Download into directory", this);
-    layout->addWidget(label, 4, 0);
+    layout->addWidget(label, 4, 0, 1, 2);
 
     m_prefixInput->setText(m_prefix);
     layout->addWidget(m_prefixInput, 4, 2, 1, 2);
