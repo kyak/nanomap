@@ -115,7 +115,7 @@ MapWidget::MapWidget(QWidget *parent)
             m_minIndexYList << 0;
             m_maxIndexYList << (1 << i) - 1;
         }
-        m_baseName = QDir::homePath()+"/Maps/OSM/%z/%x/%y.png";
+        m_baseName = QDir::homePath()+"/Maps/%p/%z/%x/%y.png";
         QTimer::singleShot(100, this, SLOT(loadConfig()));
     }
 
@@ -597,6 +597,16 @@ QString MapWidget::filename(int x, int y)
         sy.prepend(QString(m_yPadding-sy.length(), '0'));
         result = m_baseName;
         result.replace("%z", level).replace("%x", sx).replace("%y", sy);
+        if (result.contains("%p")) {
+            QStringList dirs = QDir(QDir::homePath()+"/Maps/").entryList(QDir::AllDirs|QDir::NoDotAndDotDot);
+            foreach (const QString &dir, dirs) {
+                QString tmp = result;
+                tmp.replace("%p", dir);
+                if (QFile::exists(tmp)) {
+                    return tmp;
+                }
+            }
+        }
     }
     return result;
 }

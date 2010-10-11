@@ -35,12 +35,14 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     m_startLevel(0),
     m_dlRect(),
     m_dlList(),
+    m_prefix("OSM"),
     m_up(new QLabel("N 0", this)),
     m_left(new QLabel("E 0", this)),
     m_right(new QLabel("E 0", this)),
     m_bottom(new QLabel("N 0", this)),
     m_levelSpinBox(new QSpinBox(this)),
     m_dlProgress(new QProgressBar(this)),
+    m_prefixInput(new QLineEdit(this)),
     m_skipExisting(new QCheckBox("S&kip already downloaded tiles", this))
 {
     QGridLayout *layout = new QGridLayout(this);
@@ -66,19 +68,25 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     m_levelSpinBox->setRange(0, 18);
     layout->addWidget(m_levelSpinBox, 3, 2, 1, 2);
 
+    label = new QLabel("Download into directory", this);
+    layout->addWidget(label, 4, 0);
+
+    m_prefixInput->setText(m_prefix);
+    layout->addWidget(m_prefixInput, 4, 2, 1, 2);
+
     m_skipExisting->setChecked(false);
-    layout->addWidget(m_skipExisting, 4, 0, 1, 0);
+    layout->addWidget(m_skipExisting, 5, 0, 1, 0);
 
     m_dlProgress->setFormat("%v / %m");
-    layout->addWidget(m_dlProgress, 5, 0, 1, 4);
+    layout->addWidget(m_dlProgress, 6, 0, 1, 4);
 
     QPushButton *start = new QPushButton("&Start", this);
     connect(start, SIGNAL(clicked()), this, SLOT(startDownload()));
-    layout->addWidget(start, 6, 0, 1, 2);
+    layout->addWidget(start, 7, 0, 1, 2);
 
     QPushButton *back = new QPushButton("&Back", this);
     connect(back, SIGNAL(clicked()), this, SIGNAL(back()));
-    layout->addWidget(back, 6, 2, 1, 2);
+    layout->addWidget(back, 7, 2, 1, 2);
 
     connect(m_manager, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(replyFinished(QNetworkReply*)));
@@ -111,6 +119,7 @@ void DownloadWidget::setDownloadRect(const QRectF &rect)
 
 void DownloadWidget::startDownload()
 {
+    m_prefix = m_prefixInput->text();
     m_dlProgress->setValue(0);
     for (int level = m_startLevel; level <= m_levelSpinBox->value(); ++level) {
         int max = pow(2, level) - 1;
@@ -138,19 +147,19 @@ void DownloadWidget::replyFinished(QNetworkReply *reply)
         int level = path.section('/', 1, 1).toInt();
         int x = path.section('/', 2, 2).toInt();
 
-        QDir base(QDir::homePath()+"/Maps/OSM");
+        QDir base(QDir::homePath()+"/Maps/"+m_prefix);
         base.mkpath(QString("%1/%2").arg(level).arg(x));
 
         QByteArray data = reply->readAll();
         if (!data.isEmpty()) {
-            QFile file(QDir::homePath()+"/Maps/OSM"+path);
+            QFile file(QDir::homePath()+"/Maps/"+m_prefix+path);
             if (file.open(QFile::WriteOnly)) {
                 file.write(data);
             }
         }
         while (!m_dlList.isEmpty()) {
             QUrl url(m_dlList.takeFirst());
-            if (QFile::exists(QDir::homePath()+"/Maps/OSM"+url.path()) &&
+            if (QFile::exists(QDir::homePath()+"/Maps/"+m_prefix+url.path()) &&
                 m_skipExisting->isChecked()) {	    	    
                 int n = m_dlProgress->value();
                 m_dlProgress->setValue(n+1);

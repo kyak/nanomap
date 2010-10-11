@@ -22,6 +22,7 @@
 
 #include <QtGui/QCheckBox>
 #include <QtGui/QLabel>
+#include <QtGui/QLineEdit>
 #include <QtGui/QProgressBar>
 #include <QtGui/QSpinBox>
 #include <QtGui/QWidget>
@@ -54,9 +55,11 @@ private:
     int m_startLevel;
     QRectF m_dlRect;
     QStringList m_dlList;
+    QString m_prefix;
     QLabel *m_up, *m_left, *m_right, *m_bottom;
     QSpinBox *m_levelSpinBox;
     QProgressBar *m_dlProgress;
+    QLineEdit *m_prefixInput;
     QCheckBox *m_skipExisting;
 
 };
