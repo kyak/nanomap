@@ -77,6 +77,7 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     m_skipExisting->setChecked(false);
     layout->addWidget(m_skipExisting, 5, 0, 1, 0);
 
+    m_dlProgress->hide();
     m_dlProgress->setFormat("%v / %m");
     layout->addWidget(m_dlProgress, 6, 0, 1, 4);
 
@@ -134,6 +135,7 @@ void DownloadWidget::startDownload()
         }
     }
     if (!m_dlList.isEmpty()) {
+        m_dlProgress->show();
         m_dlProgress->setRange(0, m_dlList.count());
         QUrl url(m_dlList.takeFirst());
         m_manager->get(QNetworkRequest(url));
@@ -142,6 +144,9 @@ void DownloadWidget::startDownload()
 
 void DownloadWidget::replyFinished(QNetworkReply *reply)
 {
+    if (m_dlList.isEmpty()) {
+        m_dlProgress->hide();
+    }
     if (reply->error() == QNetworkReply::NoError) {
         QString path = reply->url().path();
         int level = path.section('/', 1, 1).toInt();
