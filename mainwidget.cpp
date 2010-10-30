@@ -28,6 +28,7 @@
 #include "gpslayer.h"
 #include "gpxlayer.h"
 #include "markerlayer.h"
+#include "poilayer.h"
 #include "timelayer.h"
 
 #include <QtCore/QDir>
@@ -88,12 +89,16 @@ MainWidget::~MainWidget()
 {
 }
 
-void MainWidget::loadGpx(const QString &fileName)
+void MainWidget::loadFile(const QString &fileName)
 {
     if (fileName.endsWith(".gpx")) {
         AbstractLayer *l = new GpxLayer(m_map);
         l->load(fileName);
         m_map->addLayer(l, 2, "GPS-Track");
+    } else if (fileName.endsWith(".osm")) {
+        AbstractLayer *l = new PoiLayer(m_map);
+        l->load(fileName);
+        m_map->addLayer(l, 3, "Points Of Interest");
     }
 }
 

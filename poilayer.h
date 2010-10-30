@@ -17,44 +17,32 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef MAINWIDGET_H
-#define MAINWIDGET_H
+#ifndef POI_LAYER_H
+#define POI_LAYER_H
 
-#include <QtGui/QListWidget>
-#include <QtGui/QStackedWidget>
-#include <QtGui/QWidget>
+#include "abstractlayer.h"
 
-class DownloadWidget;
-class MapWidget;
-class MarkerList;
-class RoutingWidget;
+#include <QtGui/QPainter>
 
-class MainWidget : public QWidget
+class PoiLayer : public AbstractLayer
 {
     Q_OBJECT
 public:
-    MainWidget(QWidget *parent = 0);
-    ~MainWidget();
+    PoiLayer(MapWidget *map);
 
-    void loadFile(const QString &fileName);
+    virtual void load(const QString &filename);
+    virtual void zoom(int level);
+    virtual void pan(const QPoint &move);
 
-signals:
-    void close();
-
-private slots:
-    void showList();
-    void markerAdded(const QString &name);
-    void showMap();
-    void downloadArea(int level, const QRectF &rect);
-    void findRoute(const QPointF &from, const QPointF &to);
+protected:
+    virtual void paint(QPainter *painter);
 
 private:
-    QStackedWidget *m_stack;
-    MapWidget *m_map;
-    MarkerList *m_markerList;
-    DownloadWidget *m_dlWidget;
-    RoutingWidget *m_routingWidget;
+    QList<QPointF> m_points;
+    QList<QPoint> m_pointsOnScreen;
+    QStringList m_icons;
+    QPoint m_pointsOffset;
 
 };
 
-#endif // MAINWIDGET_H
+#endif // POI_LAYER_H
