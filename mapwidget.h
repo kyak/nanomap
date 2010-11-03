@@ -74,7 +74,6 @@ private:
     void downloadTile(int x, int y, int level);
     void changeZoomLevel(int diff);
 
-    QPointF m_routeStart, m_routeEnd;
     bool m_usage, m_ui, m_zoomable;
     bool m_takeScreenshot;
     int m_screenshotNumber;

@@ -28,6 +28,7 @@
 #include "gpslayer.h"
 #include "gpxlayer.h"
 #include "markerlayer.h"
+#include "monavlayer.h"
 #include "poilayer.h"
 #include "timelayer.h"
 
@@ -62,6 +63,9 @@ MainWidget::MainWidget(QWidget *parent)
     connect(m_markerList, SIGNAL(markerRenamed(int, QString)), l, SLOT(renameMarker(int, QString)));
     l->load(QDir::homePath()+"/Maps/marker.list");
     m_map->addLayer(l, 3, "Marker");
+
+    l = new MonavLayer(m_map);
+    m_map->addLayer(l, 2, "MoNav Routing");
 
     l = new GpsLayer(m_map);
     m_map->addLayer(l, 1, "GPS-Position");

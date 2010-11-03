@@ -40,8 +40,6 @@
 
 MapWidget::MapWidget(QWidget *parent)
     : QWidget(parent),
-    m_routeStart(),
-    m_routeEnd(),
     m_usage(false),
     m_ui(true),
     m_zoomable(false),
@@ -302,7 +300,7 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
         case Qt::Key_R:
         {
             if (event->modifiers() == Qt::NoModifier) {
-                emit route(m_routeStart, m_routeEnd);
+            //    emit route(m_routeStart, m_routeEnd);
             }
             break;
         }
@@ -310,15 +308,6 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
         {
             if (event->modifiers() == Qt::AltModifier) {
                 m_takeScreenshot = true;
-            } else if (event->modifiers() == Qt::NoModifier) {
-                m_routeStart = geoPos();
-            }
-            break;
-        }
-        case Qt::Key_E:
-        {
-            if (event->modifiers() == Qt::NoModifier) {
-                m_routeEnd = geoPos();
             }
             break;
         }
@@ -373,19 +362,6 @@ void MapWidget::paintEvent(QPaintEvent *event)
             }
         }
     }
-
-    painter.save();
-    QPoint p = geo2screen(m_routeStart.x(), m_routeStart.y());
-    QPolygon tri;
-    tri << p << p+QPoint(-5, -9) << p+QPoint(5, -9) << p;
-    painter.setBrush(Qt::red);
-    painter.drawPolygon(tri);
-    p = geo2screen(m_routeEnd.x(), m_routeEnd.y());
-    tri.clear();
-    tri << p << p+QPoint(-5, -9) << p+QPoint(5, -9) << p;
-    painter.setBrush(Qt::blue);
-    painter.drawPolygon(tri);
-    painter.restore();
 
     QMapIterator<int, AbstractLayer *> i(m_layer);
     while (i.hasNext()) {
