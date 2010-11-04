@@ -41,6 +41,7 @@ signals:
     void speed(qreal speed);
     void connected();
     void disconnected();
+    void fixed(bool fix);
 
 private slots:
     void readData();

@@ -78,7 +78,10 @@ void GpsClient::readData()
             }
         }
         if (mode > 1) {
+            emit fixed(true);
             emit position(QPointF(lon, lat));
+        } else {
+            emit fixed(false);
         }
     }
 }
