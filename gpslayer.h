@@ -45,11 +45,13 @@ private slots:
     void speed(qreal speed);
     void connected();
     void disconnected();
+    void fixed(bool fix);
 
 private:
     GpsClient *m_gps;
     QPointF m_pos;
     qreal m_alt, m_track, m_speed;
+    bool m_fix;
 
 };
 
