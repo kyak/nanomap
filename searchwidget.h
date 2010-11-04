@@ -17,42 +17,41 @@
  * Boston, MA  02110-1301  USA
  */
 
-#ifndef ROUTINGWIDGET_H
-#define ROUTINGWIDGET_H
+#ifndef SEARCHWIDGET_H
+#define SEARCHWIDGET_H
 
-#include <QtGui/QComboBox>
-#include <QtGui/QLabel>
 #include <QtGui/QLineEdit>
-#include <QtGui/QRadioButton>
-#include <QtGui/QWidget>
+#include <QtGui/QListWidget>
 
-class RoutingWidget : public QWidget
+#include "interfaces/iaddresslookup.h"
+
+class SearchWidget : public QWidget
 {
     Q_OBJECT
 public:
-    RoutingWidget(QWidget *parent = 0);
-    ~RoutingWidget();
-
-    void setFrom(const QPointF &from);
-    void setTo(const QPointF &to);
+    SearchWidget(QWidget *parent = 0);
+    ~SearchWidget();
 
 signals:
     void back();
+    void centerOn(qreal lon, qreal lat);
 
 private slots:
-    void findRoute();
+    void cityChanged(const QString &city);
+    void cityEntered();
+    void citySelected(QListWidgetItem *item);
+    void streetChanged(const QString &street);
+    void streetSelected(QListWidgetItem *item);
 
 private:
-    void loadConfig();
-
-    QLineEdit *m_name;
-    QComboBox *m_transport;
-    QRadioButton *m_quickest;
-    QRadioButton *m_shortest;
-    QString m_routino, m_dir, m_prefix, m_profiles, m_swap;
-    QPointF m_from, m_to;
-    QLabel *m_fromLabel, *m_toLabel;
+    IAddressLookup *m_addrLookup;
+    QHash<int, GPSCoordinate> m_cityCoordinates;
+    bool m_loaded;
+    QLineEdit *m_city;
+    QListWidget *m_cityList;
+    QLineEdit *m_street;
+    QListWidget *m_streetList;
  
 };
 
-#endif // ROUTINGWIDGET_H
+#endif // SEARCHWIDGET_H

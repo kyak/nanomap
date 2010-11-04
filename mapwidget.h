@@ -49,7 +49,7 @@ signals:
     void close();
     void showMarkerList();
     void downloadArea(int level, const QRectF &rect);
-    void route(const QPointF &from, const QPointF &to);
+    void search();
 
 protected:
     virtual void resizeEvent(QResizeEvent *event);

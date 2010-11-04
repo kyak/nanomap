@@ -27,7 +27,7 @@
 class DownloadWidget;
 class MapWidget;
 class MarkerList;
-class RoutingWidget;
+class SearchWidget;
 
 class MainWidget : public QWidget
 {
@@ -45,15 +45,16 @@ private slots:
     void showList();
     void markerAdded(const QString &name);
     void showMap();
+    void showMap(qreal lon, qreal lat);
     void downloadArea(int level, const QRectF &rect);
-    void findRoute(const QPointF &from, const QPointF &to);
+    void search();
 
 private:
     QStackedWidget *m_stack;
     MapWidget *m_map;
     MarkerList *m_markerList;
     DownloadWidget *m_dlWidget;
-    RoutingWidget *m_routingWidget;
+    SearchWidget *m_search;
 
 };
 

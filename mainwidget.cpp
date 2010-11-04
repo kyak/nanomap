@@ -22,7 +22,7 @@
 #include "downloadwidget.h"
 #include "mapwidget.h"
 #include "markerlist.h"
-#include "routingwidget.h"
+#include "searchwidget.h"
 
 #include "batterylayer.h"
 #include "gpslayer.h"
@@ -42,7 +42,7 @@ MainWidget::MainWidget(QWidget *parent)
     m_map(new MapWidget(this)),
     m_markerList(new MarkerList(this)),
     m_dlWidget(new DownloadWidget(this)),
-    m_routingWidget(new RoutingWidget(this))
+    m_search(new SearchWidget(this))
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -73,7 +73,7 @@ MainWidget::MainWidget(QWidget *parent)
     connect(m_map, SIGNAL(close()), this, SIGNAL(close()));
     connect(m_map, SIGNAL(showMarkerList()), this, SLOT(showList()));
     connect(m_map, SIGNAL(downloadArea(int, QRectF)), this, SLOT(downloadArea(int, QRectF)));
-    connect(m_map, SIGNAL(route(QPointF, QPointF)), this, SLOT(findRoute(QPointF, QPointF)));
+    connect(m_map, SIGNAL(search()), this, SLOT(search()));
     m_stack->insertWidget(0, m_map);
 
     connect(m_markerList, SIGNAL(back()), this, SLOT(showMap()));
@@ -83,8 +83,9 @@ MainWidget::MainWidget(QWidget *parent)
     connect(m_dlWidget, SIGNAL(back()), this, SLOT(showMap()));
     m_stack->insertWidget(2, m_dlWidget);
 
-    connect(m_routingWidget, SIGNAL(back()), this, SLOT(showMap()));
-    m_stack->insertWidget(3, m_routingWidget);
+    connect(m_search, SIGNAL(back()), this, SLOT(showMap()));
+    connect(m_search, SIGNAL(centerOn(qreal, qreal)), this, SLOT(showMap(qreal, qreal)));
+    m_stack->insertWidget(3, m_search);
 
     resize(320, 240);
 }
@@ -121,6 +122,12 @@ void MainWidget::showMap()
     m_stack->setCurrentIndex(0);
 }
 
+void MainWidget::showMap(qreal lon, qreal lat)
+{
+    m_map->centerOnGeoPos(lon, lat);
+    showMap();
+}
+
 void MainWidget::downloadArea(int level, const QRectF &rect)
 {
     m_dlWidget->setStartLevel(level);
@@ -128,11 +135,8 @@ void MainWidget::downloadArea(int level, const QRectF &rect)
     m_stack->setCurrentIndex(2);
 }
 
-void MainWidget::findRoute(const QPointF &from, const QPointF &to)
+void MainWidget::search()
 {
-    m_routingWidget->setFrom(from);
-    m_routingWidget->setTo(to);
-
     m_stack->setCurrentIndex(3);
 }
 

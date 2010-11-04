@@ -297,10 +297,10 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
             }
             break;
         }
-        case Qt::Key_R:
+        case Qt::Key_F:
         {
-            if (event->modifiers() == Qt::NoModifier) {
-            //    emit route(m_routeStart, m_routeEnd);
+            if (event->modifiers() == Qt::ControlModifier) {
+                emit search();
             }
             break;
         }
