@@ -111,16 +111,23 @@ void MonavLayer::paint(QPainter *painter)
         }
     }
 
-    QPoint p = map()->geo2screen(m_routeStart.x(), m_routeStart.y());
+    QPoint p;
     QPolygon tri;
-    tri << p << p+QPoint(-5, -9) << p+QPoint(5, -9) << p;
-    painter->setBrush(Qt::red);
-    painter->drawPolygon(tri);
-    p = map()->geo2screen(m_routeEnd.x(), m_routeEnd.y());
-    tri.clear();
-    tri << p << p+QPoint(-5, -9) << p+QPoint(5, -9) << p;
-    painter->setBrush(Qt::blue);
-    painter->drawPolygon(tri);
+
+    if (!m_routeStart.isNull()) {
+        p = map()->geo2screen(m_routeStart.x(), m_routeStart.y());
+        tri << p << p+QPoint(-5, -9) << p+QPoint(5, -9) << p;
+        painter->setBrush(Qt::red);
+        painter->drawPolygon(tri);
+    }
+
+    if (!m_routeEnd.isNull()) {
+        p = map()->geo2screen(m_routeEnd.x(), m_routeEnd.y());
+        tri.clear();
+        tri << p << p+QPoint(-5, -9) << p+QPoint(5, -9) << p;
+        painter->setBrush(Qt::blue);
+        painter->drawPolygon(tri);
+    }
 }
 
 void MonavLayer::keyPressed(QKeyEvent *event)
