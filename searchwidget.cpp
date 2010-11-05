@@ -134,7 +134,10 @@ void SearchWidget::citySelected(QListWidgetItem *item)
 void SearchWidget::streetChanged(const QString &street)
 {
     if (m_loaded) {
-        m_addrLookup->SelectPlace(m_cityList->currentItem()->data(Qt::UserRole).toInt());
+        QListWidgetItem *item = m_cityList->currentItem();
+        if (item) {
+            m_addrLookup->SelectPlace(item->data(Qt::UserRole).toInt());
+        }
         QStringList suggestions, inputSuggestions;
         bool found = m_addrLookup->GetStreetSuggestions(street, 20, &suggestions, &inputSuggestions);
         if (found) {
