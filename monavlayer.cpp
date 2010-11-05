@@ -143,14 +143,24 @@ void MonavLayer::keyPressed(QKeyEvent *event)
         case Qt::Key_S:
         {
             if (event->modifiers() == Qt::NoModifier) {
-                m_routeStart = map()->geoPos();
+                QPointF p = map()->geoPos();
+                UnsignedCoordinate coord(GPSCoordinate(p.y(), p.x()));
+                IGPSLookup::Result pos;
+                if (m_gpsLookup->GetNearestEdge(&pos, coord, 1000.0)) {
+                    m_routeStart = p;
+                }
             }
             break;
         }
         case Qt::Key_E:
         {
             if (event->modifiers() == Qt::NoModifier) {
-                m_routeEnd = map()->geoPos();
+                QPointF p = map()->geoPos();
+                UnsignedCoordinate coord(GPSCoordinate(p.y(), p.x()));
+                IGPSLookup::Result pos;
+                if (m_gpsLookup->GetNearestEdge(&pos, coord, 1000.0)) {
+                    m_routeEnd = p;
+                }
             }
             break;
         }
