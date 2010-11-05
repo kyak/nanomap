@@ -63,6 +63,8 @@ MonavLayer::MonavLayer(MapWidget *map) :
         } else {
             m_loaded = false;
         }
+    } else {
+        m_loaded = false;
     }
     QPluginLoader gLoader(gpsLookupLib);
     plugin = gLoader.instance();
@@ -74,6 +76,8 @@ MonavLayer::MonavLayer(MapWidget *map) :
         } else {
             m_loaded = false;
         }
+    } else {
+        m_loaded = false;
     }
 }
 
@@ -146,7 +150,7 @@ void MonavLayer::keyPressed(QKeyEvent *event)
                 QPointF p = map()->geoPos();
                 UnsignedCoordinate coord(GPSCoordinate(p.y(), p.x()));
                 IGPSLookup::Result pos;
-                if (m_gpsLookup->GetNearestEdge(&pos, coord, 1000.0)) {
+                if (m_loaded && m_gpsLookup->GetNearestEdge(&pos, coord, 1000.0)) {
                     m_routeStart = p;
                 }
             }
@@ -158,7 +162,7 @@ void MonavLayer::keyPressed(QKeyEvent *event)
                 QPointF p = map()->geoPos();
                 UnsignedCoordinate coord(GPSCoordinate(p.y(), p.x()));
                 IGPSLookup::Result pos;
-                if (m_gpsLookup->GetNearestEdge(&pos, coord, 1000.0)) {
+                if (m_loaded && m_gpsLookup->GetNearestEdge(&pos, coord, 1000.0)) {
                     m_routeEnd = p;
                 }
             }
