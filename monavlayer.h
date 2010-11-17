@@ -50,7 +50,8 @@ private:
     QPolygonF m_track;
     QList<QPoint> m_trackOnScreen;
     QPoint m_trackOffset;
-    int m_zoomLevel;
+    int m_zoomLevel, m_currentDirection;
+    QStringList m_names, m_types;
 
 };
 

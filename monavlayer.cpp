@@ -38,7 +38,10 @@ MonavLayer::MonavLayer(MapWidget *map) :
     m_track(),
     m_trackOnScreen(),
     m_trackOffset(),
-    m_zoomLevel(0)
+    m_zoomLevel(0),
+    m_currentDirection(0),
+    m_names(),
+    m_types()
 {
     QSettings set(QDir::homePath()+"/Maps/nanomap.conf", QSettings::NativeFormat);
     set.beginGroup("monav");
@@ -132,6 +135,12 @@ void MonavLayer::paint(QPainter *painter)
         painter->setBrush(Qt::blue);
         painter->drawPolygon(tri);
     }
+    //if (m_currentDirection < m_names.count()) {
+    //    painter->setBrush(QBrush(QColor(255, 255, 255, 210)));
+    //    painter->drawRoundedRect(25, 1, 200, 16, 5, 5);
+    //    painter->drawText(30, 3, 190, 14, Qt::AlignCenter,
+    //                      m_names.at(m_currentDirection));
+    //}
 }
 
 void MonavLayer::keyPressed(QKeyEvent *event)
@@ -168,6 +177,20 @@ void MonavLayer::keyPressed(QKeyEvent *event)
             }
             break;
         }
+        case Qt::Key_N:
+        {
+            if (m_currentDirection < m_names.count()-1) {
+                ++m_currentDirection;
+            }
+            break;
+        }
+        case Qt::Key_P:
+        {
+            if (m_currentDirection > 0) {
+                --m_currentDirection;
+            }
+            break;
+        }
     }
 }
 
@@ -197,10 +220,21 @@ void MonavLayer::findRoute()
     if (m_router->GetRoute(&dist, &nodes, &edges, startPos, endPos)) {
         qDebug() << "route found";
         m_track.clear();
-        for (int j = 0; j < nodes.size(); ++j) {
-            GPSCoordinate c = nodes[j].coordinate.ToGPSCoordinate();
+        for (int i = 0; i < nodes.size(); ++i) {
+            GPSCoordinate c = nodes[i].coordinate.ToGPSCoordinate();
             m_track << QPointF(Projection::lon2rawx(c.longitude), Projection::lat2rawy(c.latitude));
         }
+        for (int i = 0; i < edges.size(); ++i) {
+            QString name, type;
+            m_router->GetName(&name, edges[i].name);
+            m_router->GetType(&type, edges[i].type);
+            if (m_names.isEmpty() || (!m_names.isEmpty() && name != m_names.last())) {
+                m_names << name;
+                m_types << type;
+            }
+            //qDebug() << name << type << edges[i].seconds;
+        }
+        m_currentDirection = 0;
         zoom(m_zoomLevel);
     }
 }
