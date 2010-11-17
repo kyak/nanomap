@@ -42,6 +42,8 @@ private:
     QList<QPoint> m_pointsOnScreen;
     QStringList m_icons;
     QPoint m_pointsOffset;
+    QString m_iconPath;
+    QHash<QString, QPixmap*> m_iconCache;
 
 };
 

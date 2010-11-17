@@ -22,7 +22,9 @@
 #include "mapwidget.h"
 #include "projection.h"
 
+#include <QtCore/QDir>
 #include <QtCore/QFile>
+#include <QtCore/QSettings>
 #include <QtXml/QXmlStreamReader>
 
 PoiLayer::PoiLayer(MapWidget *map) :
@@ -30,8 +32,15 @@ PoiLayer::PoiLayer(MapWidget *map) :
     m_points(),
     m_pointsOnScreen(),
     m_icons(),
-    m_pointsOffset(0, 0)
+    m_pointsOffset(0, 0),
+    m_iconPath(),
+    m_iconCache()
 {
+    QSettings set(QDir::homePath()+"/Maps/nanomap.conf", QSettings::NativeFormat);
+
+    set.beginGroup("poi");
+    m_iconPath = set.value("iconpath", "/usr/share/NanoMap/icons").toString();
+    set.endGroup();
 }
 
 void PoiLayer::load(const QString &filename)
@@ -83,9 +92,15 @@ void PoiLayer::load(const QString &filename)
                     foreach (const QString &c, categories) {
                         QString t = tags.value(c, "");
                         if (!t.isEmpty()) {
-                            m_points << pos;
-                            m_icons << t;
-                            break;
+                            QString icon = m_iconPath+"/"+t+".png";
+                            if (QFile::exists(icon)) {
+                                if (!m_iconCache.contains(t)) {
+                                    m_iconCache.insert(t, new QPixmap(icon));
+                                }
+                                m_points << pos;
+                                m_icons << t;
+                                break;
+                            }
                         }
                     }
                     tags.clear();
@@ -120,7 +135,7 @@ void PoiLayer::paint(QPainter *painter)
     QPoint p;
     for (int i = 0; i < m_pointsOnScreen.count(); ++i) {
         p = m_pointsOnScreen.at(i);
-        painter->drawEllipse(p + m_pointsOffset, 5, 5);
+        painter->drawPixmap(p + m_pointsOffset, *m_iconCache.value(m_icons.at(i)));
     }
 }
 
