@@ -20,11 +20,11 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef QTHELPERS_H
 #define QTHELPERS_H
 
-#include <QtCore/QFile>
-#include <QtCore/QtDebug>
-#include <QtCore/QDataStream>
-#include <QtCore/QTime>
-#include <QtCore/QDir>
+#include <QFile>
+#include <QtDebug>
+#include <QDataStream>
+#include <QTime>
+#include <QDir>
 
 static inline QString fileInDirectory( QString directory, QString filename )
 {

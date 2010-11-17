@@ -20,10 +20,10 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef BLOCKCACHE_H_INCLUDED
 #define BLOCKCACHE_H_INCLUDED
 
-#include <QtCore/QFile>
-#include <QtCore/QHash>
+#include <QFile>
+#include <QHash>
 #include <limits>
-#include <QtCore/QtDebug>
+#include <QtDebug>
 
 // Block must have member function / variables:
 // variable id => block id

@@ -20,7 +20,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef TRIE_H
 #define TRIE_H
 
-#include <QtCore/QString>
+#include <QString>
 #include <vector>
 #include "utils/coordinates.h"
 #include "utils/bithelpers.h"

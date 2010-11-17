@@ -20,12 +20,12 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef TABLE_H
 #define TABLE_H
 
-#include <QtCore/QtGlobal>
-#include <QtCore/QCache>
-#include <QtCore/QFile>
+#include <QtGlobal>
+#include <QCache>
+#include <QFile>
 #include <string.h>
 #include <vector>
-#include <QtCore/QtDebug>
+#include <QtDebug>
 
 namespace gg {
 

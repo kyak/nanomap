@@ -20,9 +20,9 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef UNICODETOURNAMENTTRIECLIENT_H
 #define UNICODETOURNAMENTTRIECLIENT_H
 
-#include <QtCore/QObject>
-#include <QtCore/QtPlugin>
-#include <QtCore/QFile>
+#include <QObject>
+#include <QtPlugin>
+#include <QFile>
 #include "interfaces/iaddresslookup.h"
 #include "trie.h"
 

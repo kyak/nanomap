@@ -24,7 +24,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <cassert>
 #include <vector>
-#include <QtCore/QHash>
+#include <QHash>
 
 template< typename NodeID, typename Key >
 class ArrayStorage {

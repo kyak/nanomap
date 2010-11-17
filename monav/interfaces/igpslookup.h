@@ -22,8 +22,8 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils/config.h"
 #include "utils/coordinates.h"
-#include <QtCore/QtPlugin>
-#include <QtCore/QVector>
+#include <QtPlugin>
+#include <QVector>
 
 class IGPSLookup
 {

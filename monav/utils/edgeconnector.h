@@ -22,7 +22,7 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils/coordinates.h"
 #include <vector>
-#include <QtCore/QMultiHash>
+#include <QMultiHash>
 #include <algorithm>
 
 static uint qHash( const UnsignedCoordinate& key )

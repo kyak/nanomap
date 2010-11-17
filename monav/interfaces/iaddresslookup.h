@@ -21,8 +21,8 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #define IADDRESSLOOKUP_H
 
 #include "utils/coordinates.h"
-#include <QtCore/QtPlugin>
-#include <QtCore/QVector>
+#include <QtPlugin>
+#include <QVector>
 
 class IAddressLookup
 {
