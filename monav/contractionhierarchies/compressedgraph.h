@@ -24,8 +24,8 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils/coordinates.h"
 #include "utils/bithelpers.h"
 #include "blockcache.h"
-#include <QString>
-#include <QFile>
+#include <QtCore/QString>
+#include <QtCore/QFile>
 #include <algorithm>
 #include <vector>
 

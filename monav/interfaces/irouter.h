@@ -23,8 +23,8 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils/config.h"
 #include "utils/coordinates.h"
 #include "interfaces/igpslookup.h"
-#include <QtPlugin>
-#include <QVector>
+#include <QtCore/QtPlugin>
+#include <QtCore/QVector>
 
 class IRouter
 {

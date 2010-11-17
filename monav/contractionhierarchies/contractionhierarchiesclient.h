@@ -20,8 +20,8 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef CONTRACTIONHIERARCHIESCLIENT_H
 #define CONTRACTIONHIERARCHIESCLIENT_H
 
-#include <QObject>
-#include <QStringList>
+#include <QtCore/QObject>
+#include <QtCore/QStringList>
 #include "interfaces/irouter.h"
 #include "binaryheap.h"
 #include "compressedgraph.h"

@@ -23,10 +23,10 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "unicodetournamenttrieclient.h"
 #include "utils/qthelpers.h"
-#include <QtDebug>
+#include <QtCore/QtDebug>
 #include <algorithm>
 #ifndef NOGUI
- #include <QMessageBox>
+ #include <QtGui/QMessageBox>
 #endif
 
 UnicodeTournamentTrieClient::UnicodeTournamentTrieClient()

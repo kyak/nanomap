@@ -20,12 +20,12 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef GPSGRIDCLIENT_H
 #define GPSGRIDCLIENT_H
 
-#include <QObject>
-#include <QFile>
+#include <QtCore/QObject>
+#include <QtCore/QFile>
 #include "interfaces/igpslookup.h"
 #include "cell.h"
 #include "table.h"
-#include <QCache>
+#include <QtCore/QCache>
 
 class GPSGridClient : public QObject, public IGPSLookup
 {

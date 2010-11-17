@@ -18,14 +18,14 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "gpsgridclient.h"
-#include <QtDebug>
-#include <QHash>
+#include <QtCore/QtDebug>
+#include <QtCore/QHash>
 #include <algorithm>
 #include "utils/qthelpers.h"
 #ifndef NOGUI
-	#include <QInputDialog>
+	#include <QtGui/QInputDialog>
 #endif
-#include <QSettings>
+#include <QtCore/QSettings>
 
 GPSGridClient::GPSGridClient()
 {

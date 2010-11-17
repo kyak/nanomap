@@ -22,10 +22,10 @@ along with MoNav.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "contractionhierarchiesclient.h"
 #include "utils/qthelpers.h"
-#include <QtDebug>
+#include <QtCore/QtDebug>
 #include <stack>
 #ifndef NOGUI
-	#include <QMessageBox>
+	#include <QtGui/QMessageBox>
 #endif
 
 ContractionHierarchiesClient::ContractionHierarchiesClient()
