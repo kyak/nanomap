@@ -4,6 +4,8 @@
 #
 #-------------------------------------------------
 
+include(../../nanomap.pri)
+
 DESTDIR = ..
 TEMPLATE = lib
 CONFIG += plugin

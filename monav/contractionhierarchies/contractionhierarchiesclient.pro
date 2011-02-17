@@ -1,3 +1,5 @@
+include(../../nanomap.pri)
+
 TEMPLATE = lib
 CONFIG += plugin
 #CONFIG += debug

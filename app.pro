@@ -1,3 +1,5 @@
+include(nanomap.pri)
+
 TARGET = NanoMap
 TEMPLATE = app
 
