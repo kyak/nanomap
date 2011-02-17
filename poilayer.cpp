@@ -1,5 +1,5 @@
 /*
- * Copyright 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2010-2011  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "mapwidget.h"
 #include "projection.h"
 
+#include <QtCore/QDebug>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QSettings>
@@ -113,11 +114,15 @@ void PoiLayer::load(const QString &filename)
 
 void PoiLayer::zoom(int level)
 {
+    if (m_points.isEmpty()) {
+        return;
+    }
+
+    int scale = 1 << level;
+    m_pointsOnScreen.clear();
+    m_pointsOffset = map()->raw2screen(m_points.first().x(), m_points.first().y(), scale);
+    m_pointsOnScreen << QPoint(0, 0);
     if (m_points.count() > 1) {
-        int scale = 1 << level;
-        m_pointsOnScreen.clear();
-        m_pointsOffset = map()->raw2screen(m_points.first().x(), m_points.first().y(), scale);
-        m_pointsOnScreen << QPoint(0, 0);
         for (int i = 1; i < m_points.count(); ++i) {
             QPointF p = m_points.at(i);
             m_pointsOnScreen << map()->raw2screen(p.x(), p.y(), scale) - m_pointsOffset;
