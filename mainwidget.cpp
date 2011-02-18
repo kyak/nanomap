@@ -20,6 +20,7 @@
 #include "mainwidget.h"
 
 #include "downloadwidget.h"
+#include "fileselector.h"
 #include "mapwidget.h"
 #include "markerlist.h"
 #include "searchwidget.h"
@@ -42,6 +43,7 @@ MainWidget::MainWidget(QWidget *parent)
     m_map(new MapWidget(this)),
     m_markerList(new MarkerList(this)),
     m_dlWidget(new DownloadWidget(this)),
+    m_fileSelector(new FileSelector(this)),
     m_search(new SearchWidget(this))
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
@@ -73,6 +75,7 @@ MainWidget::MainWidget(QWidget *parent)
     connect(m_map, SIGNAL(close()), this, SIGNAL(close()));
     connect(m_map, SIGNAL(showMarkerList()), this, SLOT(showList()));
     connect(m_map, SIGNAL(downloadArea(int, QRectF)), this, SLOT(downloadArea(int, QRectF)));
+    connect(m_map, SIGNAL(loadFile()), this, SLOT(showFileSelector()));
     connect(m_map, SIGNAL(search()), this, SLOT(search()));
     m_stack->insertWidget(0, m_map);
 
@@ -88,11 +91,21 @@ MainWidget::MainWidget(QWidget *parent)
     connect(m_search, SIGNAL(centerOn(qreal, qreal)), this, SLOT(showMap(qreal, qreal)));
     m_stack->insertWidget(3, m_search);
 
+    m_fileSelector->setFileTypes(QStringList() << "*.gpx" << "*.osm");
+    connect(m_fileSelector, SIGNAL(cancel()), this, SLOT(showMap()));
+    connect(m_fileSelector, SIGNAL(fileSelected(QString)), this, SLOT(loadFile(QString)));
+    m_stack->insertWidget(4, m_fileSelector);
+
     resize(320, 240);
 }
 
 MainWidget::~MainWidget()
 {
+}
+
+void MainWidget::loadFile(const QString &fileName)
+{
+    loadFile(fileName, "");
 }
 
 void MainWidget::loadFile(const QString &fileName, const QString &title)
@@ -108,6 +121,7 @@ void MainWidget::loadFile(const QString &fileName, const QString &title)
         QString t = title.isEmpty() ? "Points Of Interest" : title;
         m_map->addLayer(l, 3, t);
     }
+    showMap();
 }
 
 void MainWidget::showList()
@@ -123,6 +137,7 @@ void MainWidget::markerAdded(const QString &name)
 void MainWidget::showMap()
 {
     m_stack->setCurrentIndex(0);
+    m_map->setFocus(Qt::OtherFocusReason);
 }
 
 void MainWidget::showMap(qreal lon, qreal lat)
@@ -141,5 +156,10 @@ void MainWidget::downloadArea(int level, const QRectF &rect)
 void MainWidget::search()
 {
     m_stack->setCurrentIndex(3);
+}
+
+void MainWidget::showFileSelector()
+{
+    m_stack->setCurrentIndex(4);
 }
 

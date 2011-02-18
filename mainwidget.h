@@ -25,6 +25,7 @@
 #include <QtGui/QWidget>
 
 class DownloadWidget;
+class FileSelector;
 class MapWidget;
 class MarkerList;
 class SearchWidget;
@@ -37,6 +38,7 @@ public:
     ~MainWidget();
 
 public slots:
+    void loadFile(const QString &fileName);
     void loadFile(const QString &fileName, const QString &title);
 
 signals:
@@ -49,12 +51,14 @@ private slots:
     void showMap(qreal lon, qreal lat);
     void downloadArea(int level, const QRectF &rect);
     void search();
+    void showFileSelector();
 
 private:
     QStackedWidget *m_stack;
     MapWidget *m_map;
     MarkerList *m_markerList;
     DownloadWidget *m_dlWidget;
+    FileSelector *m_fileSelector;
     SearchWidget *m_search;
 
 };

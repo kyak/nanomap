@@ -1,0 +1,9 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>up.png</file>
+    <file>ok.png</file>
+    <file>cancel.png</file>
+    <file>bookmark.png</file>
+    <file>nobookmark.png</file>
+</qresource>
+</RCC>

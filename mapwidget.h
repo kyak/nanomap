@@ -49,6 +49,7 @@ signals:
     void close();
     void showMarkerList();
     void downloadArea(int level, const QRectF &rect);
+    void loadFile();
     void search();
 
 protected:

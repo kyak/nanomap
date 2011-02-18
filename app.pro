@@ -5,7 +5,6 @@ TEMPLATE = app
 
 QT += network
 
-#LIBS += -Lmonav -lgpsgridclient -lcontractionhierarchiesclient
 INCLUDEPATH += monav
 
 SOURCES += main.cpp \
@@ -22,6 +21,7 @@ SOURCES += main.cpp \
             mapwidget.cpp \
             markerlist.cpp \
             downloadwidget.cpp \
+            fileselector.cpp \
             searchwidget.cpp \
             gpsclient.cpp
 
@@ -38,5 +38,9 @@ HEADERS += mainwidget.h \
             mapwidget.h \
             markerlist.h \
             downloadwidget.h \
+            fileselector.h \
             searchwidget.h \
             gpsclient.h
+
+RESOURCES = pics/icons.qrc
+
