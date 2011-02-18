@@ -1,5 +1,5 @@
 /*
- * Copyright 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2010-2011  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,8 @@ public:
     MainWidget(QWidget *parent = 0);
     ~MainWidget();
 
-    void loadFile(const QString &fileName);
+public slots:
+    void loadFile(const QString &fileName, const QString &title);
 
 signals:
     void close();

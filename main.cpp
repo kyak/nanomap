@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     MainWidget w;
 
     if (QApplication::arguments().count() > 1) {
-        w.loadFile(QApplication::arguments().at(1));
+        w.loadFile(QApplication::arguments().at(1), "");
     }
 
     QObject::connect(&w, SIGNAL(close()), &a, SLOT(quit()));

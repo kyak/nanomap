@@ -1,5 +1,5 @@
 /*
- * Copyright 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2010-2011  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -143,6 +143,7 @@ void MapWidget::addLayer(AbstractLayer *layer, int z, const QString &name)
     connect(layer, SIGNAL(visibilityChanged(bool)), action, SLOT(setChecked(bool)));
     m_layerMenu->addAction(action);
     m_layer.insertMulti(z, layer);
+    layer->zoom(m_level);
 }
 
 void MapWidget::resizeEvent(QResizeEvent *event)

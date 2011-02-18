@@ -1,5 +1,5 @@
 /*
- * Copyright 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2010-2011  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,6 +81,7 @@ MainWidget::MainWidget(QWidget *parent)
     m_stack->insertWidget(1, m_markerList);
 
     connect(m_dlWidget, SIGNAL(back()), this, SLOT(showMap()));
+    connect(m_dlWidget, SIGNAL(loadFile(QString, QString)), this, SLOT(loadFile(QString, QString)));
     m_stack->insertWidget(2, m_dlWidget);
 
     connect(m_search, SIGNAL(back()), this, SLOT(showMap()));
@@ -94,16 +95,18 @@ MainWidget::~MainWidget()
 {
 }
 
-void MainWidget::loadFile(const QString &fileName)
+void MainWidget::loadFile(const QString &fileName, const QString &title)
 {
     if (fileName.endsWith(".gpx")) {
         AbstractLayer *l = new GpxLayer(m_map);
         l->load(fileName);
-        m_map->addLayer(l, 2, "GPS-Track");
+        QString t = title.isEmpty() ? "GPS-Track" : title;
+        m_map->addLayer(l, 2, t);
     } else if (fileName.endsWith(".osm")) {
         AbstractLayer *l = new PoiLayer(m_map);
         l->load(fileName);
-        m_map->addLayer(l, 3, "Points Of Interest");
+        QString t = title.isEmpty() ? "Points Of Interest" : title;
+        m_map->addLayer(l, 3, t);
     }
 }
 

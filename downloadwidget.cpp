@@ -1,5 +1,5 @@
 /*
- * Copyright 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2010-2011  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,14 +24,19 @@
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
+#include <QtCore/QSettings>
 #include <QtGui/QLayout>
-#include <QtGui/QPushButton>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
 DownloadWidget::DownloadWidget(QWidget *parent)
     : QWidget(parent),
     m_manager(new QNetworkAccessManager(this)),
+    m_downloadMode(Tiles),
+    m_tabWidget(new QTabWidget(this)),
+    m_dlProgress(new QProgressBar(this)),
+    m_startButton(new QPushButton("&Start", this)),
+    m_backButton(new QPushButton("&Back", this)),
     m_startLevel(0),
     m_dlRect(),
     m_dlList(),
@@ -41,11 +46,29 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     m_right(new QLabel("E 0", this)),
     m_bottom(new QLabel("N 0", this)),
     m_levelSpinBox(new QSpinBox(this)),
-    m_dlProgress(new QProgressBar(this)),
     m_prefixInput(new QLineEdit(this)),
-    m_skipExisting(new QCheckBox("S&kip already downloaded tiles", this))
+    m_skipExisting(new QCheckBox("S&kip already downloaded tiles", this)),
+    m_poiType(new QComboBox(this)),
+    m_makePOILayer(new QCheckBox("&Load file after download", this)),
+    m_destFilename(new QLineEdit(QDir::homePath()+"/pois.osm", this))
 {
     QGridLayout *layout = new QGridLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setRowStretch(0, 1);
+
+    layout->addWidget(m_tabWidget, 0, 0, 1, 2);
+
+    m_dlProgress->hide();
+    layout->addWidget(m_dlProgress, 1, 0, 1, 2);
+
+    connect(m_startButton, SIGNAL(clicked()), this, SLOT(startDownload()));
+    layout->addWidget(m_startButton, 2, 0);
+
+    connect(m_backButton, SIGNAL(clicked()), this, SIGNAL(back()));
+    layout->addWidget(m_backButton, 2, 1);
+
+    QWidget *widget = new QWidget(this);
+    layout = new QGridLayout(widget);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setRowStretch(1, 1);
 
@@ -77,17 +100,48 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     m_skipExisting->setChecked(false);
     layout->addWidget(m_skipExisting, 5, 0, 1, 0);
 
-    m_dlProgress->hide();
-    m_dlProgress->setFormat("%v / %m");
-    layout->addWidget(m_dlProgress, 6, 0, 1, 4);
+    m_tabWidget->addTab(widget, "&Tiles");
 
-    QPushButton *start = new QPushButton("&Start", this);
-    connect(start, SIGNAL(clicked()), this, SLOT(startDownload()));
-    layout->addWidget(start, 7, 0, 1, 2);
+    widget = new QWidget(this);
+    layout = new QGridLayout(widget);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setRowStretch(1, 1);
 
-    QPushButton *back = new QPushButton("&Back", this);
-    connect(back, SIGNAL(clicked()), this, SIGNAL(back()));
-    layout->addWidget(back, 7, 2, 1, 2);
+    label = new QLabel("Type:", this);
+    layout->addWidget(label, 0, 0);
+
+    QSettings set(QDir::homePath()+"/Maps/nanomap.conf", QSettings::NativeFormat);
+    set.beginGroup("poi");
+    QString iconPath = set.value("iconpath", "/usr/share/NanoMap/icons").toString();
+    set.endGroup();
+    QDir iconDir(iconPath);
+    QStringList icons = iconDir.entryList(QStringList() << "*.png");
+    foreach (const QString &icon, icons) {
+        QString name = icon;
+        name.remove(".png");
+        m_poiType->addItem(QIcon(iconPath+"/"+icon), name);
+    }
+    layout->addWidget(m_poiType, 0, 1, 1, 3);
+
+    m_makePOILayer->setChecked(true);
+    layout->addWidget(m_makePOILayer , 2, 0, 1, 4);
+
+    label = new QLabel("Save to:", this);
+    layout->addWidget(label , 3, 0);
+
+    layout->addWidget(m_destFilename, 3, 1, 1, 3);
+
+    m_tabWidget->addTab(widget, "&Points of Interest");
+
+    widget = new QWidget(this);
+    layout = new QGridLayout(widget);
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    label = new QLabel("TODO", this);
+    label->setAlignment(Qt::AlignCenter);
+    layout->addWidget(label, 0, 0);
+
+    m_tabWidget->addTab(widget, "&Routing data");
 
     connect(m_manager, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(replyFinished(QNetworkReply*)));
@@ -120,6 +174,46 @@ void DownloadWidget::setDownloadRect(const QRectF &rect)
 
 void DownloadWidget::startDownload()
 {
+    switch (m_tabWidget->currentIndex()) {
+        case 0:
+            m_downloadMode = Tiles;
+            startDownloadTiles();
+            break;
+        case 1:
+            m_downloadMode = POIs;
+            startDownloadPOIs();
+            break;
+        case 2:
+            m_downloadMode = Packages;
+            startDownloadPackages();
+            break;
+    }
+}
+
+void DownloadWidget::replyFinished(QNetworkReply *reply)
+{
+    switch (m_downloadMode) {
+        case Tiles:
+            replyFinishedTiles(reply);
+            break;
+        case Packages:
+            replyFinishedPackages(reply);
+            break;
+        case POIs:
+            replyFinishedPOIs(reply);
+            break;
+    }
+    reply->deleteLater();
+}
+
+void DownloadWidget::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
+{
+    m_dlProgress->setRange(0, bytesTotal);
+    m_dlProgress->setValue(bytesReceived);
+}
+
+void DownloadWidget::startDownloadTiles()
+{
     m_prefix = m_prefixInput->text();
     m_dlProgress->setValue(0);
     for (int level = m_startLevel; level <= m_levelSpinBox->value(); ++level) {
@@ -137,15 +231,22 @@ void DownloadWidget::startDownload()
     if (!m_dlList.isEmpty()) {
         m_dlProgress->show();
         m_dlProgress->setRange(0, m_dlList.count());
+        m_dlProgress->setFormat("%v / %m");
+        m_tabWidget->setEnabled(false);
+        m_startButton->setEnabled(false);
+        m_backButton->setEnabled(false);
         QUrl url(m_dlList.takeFirst());
         m_manager->get(QNetworkRequest(url));
     }
 }
 
-void DownloadWidget::replyFinished(QNetworkReply *reply)
+void DownloadWidget::replyFinishedTiles(QNetworkReply *reply)
 {
     if (m_dlList.isEmpty()) {
         m_dlProgress->hide();
+        m_tabWidget->setEnabled(true);
+        m_startButton->setEnabled(true);
+        m_backButton->setEnabled(true);
     }
     if (reply->error() == QNetworkReply::NoError) {
         QString path = reply->url().path();
@@ -176,7 +277,78 @@ void DownloadWidget::replyFinished(QNetworkReply *reply)
         int n = m_dlProgress->value();
         m_dlProgress->setValue(n+1);
     }
-    reply->deleteLater();
+}
+
+void DownloadWidget::startDownloadPOIs()
+{
+    QString baseUrl("http://azure.openstreetmap.org/xapi/api/0.6/node");
+    QString key = m_poiType->currentText().section("-", 0, 0);
+    QString value = m_poiType->currentText().section("-", 1);
+    QString keyValue = QString("[%1=%2]").arg(key, value);
+    QString bbox = QString("[bbox=%1,%2,%3,%4]").arg(m_dlRect.left()).arg(m_dlRect.top())
+                                                .arg(m_dlRect.right()).arg(m_dlRect.bottom());
+    QUrl url(baseUrl+keyValue+bbox);
+    QNetworkReply *reply = m_manager->get(QNetworkRequest(url));
+    connect(reply, SIGNAL(downloadProgress(qint64, qint64)),
+            this, SLOT(downloadProgress(qint64, qint64)));
+
+    m_dlProgress->show();
+    m_dlProgress->setValue(0);
+    m_dlProgress->setFormat("%p%");
+    m_tabWidget->setEnabled(false);
+    m_startButton->setEnabled(false);
+    m_backButton->setEnabled(false);
+}
+
+void DownloadWidget::replyFinishedPOIs(QNetworkReply *reply)
+{
+    m_dlProgress->hide();
+    m_tabWidget->setEnabled(true);
+    m_startButton->setEnabled(true);
+    m_backButton->setEnabled(true);
+
+    if (reply->error() != QNetworkReply::NoError) {
+        return;
+    }
+    QByteArray data = reply->readAll();
+    if (data.isEmpty()) {
+        return;
+    }
+    QFile file(m_destFilename->text());
+    if (!file.open(QFile::WriteOnly)) {
+        return;
+    }
+    file.write(data);
+    file.close();
+
+    if (m_makePOILayer->isChecked()) {
+        emit loadFile(m_destFilename->text(), m_poiType->currentText().section("-", 1));
+    }
+}
+
+void DownloadWidget::startDownloadPackages()
+{
+    QUrl url("http://download../...");
+    QNetworkReply *reply = m_manager->get(QNetworkRequest(url));
+    connect(reply, SIGNAL(downloadProgress(qint64, qint64)),
+            this, SLOT(downloadProgress(qint64, qint64)));
+
+    m_dlProgress->show();
+    m_dlProgress->setValue(0);
+    m_dlProgress->setFormat("%p%");
+    m_tabWidget->setEnabled(false);
+    m_startButton->setEnabled(false);
+    m_backButton->setEnabled(false);
+}
+
+void DownloadWidget::replyFinishedPackages(QNetworkReply *reply)
+{
+    Q_UNUSED(reply)
+
+    m_dlProgress->hide();
+    m_tabWidget->setEnabled(true);
+    m_startButton->setEnabled(true);
+    m_backButton->setEnabled(true);
 }
 
 QString DownloadWidget::lon2string(qreal lon)
