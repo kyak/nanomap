@@ -93,7 +93,7 @@ void PoiLayer::load(const QString &filename)
                     foreach (const QString &c, categories) {
                         QString t = tags.value(c, "");
                         if (!t.isEmpty()) {
-                            QString icon = m_iconPath+"/"+t+".png";
+                            QString icon = m_iconPath+"/"+c+"-"+t+".png";
                             if (QFile::exists(icon)) {
                                 if (!m_iconCache.contains(t)) {
                                     m_iconCache.insert(t, new QPixmap(icon));
