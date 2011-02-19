@@ -1,5 +1,5 @@
 /*
- * Copyright 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2010-2011  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,6 @@ SearchWidget::SearchWidget(QWidget *parent)
     QGridLayout *layout = new QGridLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    m_city->setPlaceholderText("Enter city name");
     layout->addWidget(m_city, 0, 0, 1, 2);
     connect(m_city, SIGNAL(textEdited(QString)), this, SLOT(cityChanged(QString)));
     connect(m_city, SIGNAL(editingFinished()), this, SLOT(cityEntered()));
@@ -49,7 +48,10 @@ SearchWidget::SearchWidget(QWidget *parent)
     connect(m_cityList, SIGNAL(itemActivated(QListWidgetItem*)),
             this, SLOT(citySelected(QListWidgetItem*)));
 
+#if QT_VERSION >= 0x040700
+    m_city->setPlaceholderText("Enter city name");
     m_street->setPlaceholderText("Enter street name");
+#endif
     layout->addWidget(m_street, 2, 0, 1, 2);
     connect(m_street, SIGNAL(textEdited(QString)), this, SLOT(streetChanged(QString)));
 
@@ -57,7 +59,8 @@ SearchWidget::SearchWidget(QWidget *parent)
     connect(m_streetList, SIGNAL(itemActivated(QListWidgetItem*)),
             this, SLOT(streetSelected(QListWidgetItem*)));
 
-    QPushButton *back = new QPushButton("&Cancel", this);
+    QPushButton *back = new QPushButton("&Back", this);
+    back->setIcon(QIcon(":cancel.png"));
     layout->addWidget(back, 4, 1);
     connect(back, SIGNAL(clicked()), this, SIGNAL(back()));
 

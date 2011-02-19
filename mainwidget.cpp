@@ -91,6 +91,7 @@ MainWidget::MainWidget(QWidget *parent)
     connect(m_search, SIGNAL(centerOn(qreal, qreal)), this, SLOT(showMap(qreal, qreal)));
     m_stack->insertWidget(3, m_search);
 
+    m_fileSelector->setTitle("Open POI / Track file");
     m_fileSelector->setFileTypes(QStringList() << "*.gpx" << "*.osm");
     connect(m_fileSelector, SIGNAL(cancel()), this, SLOT(showMap()));
     connect(m_fileSelector, SIGNAL(fileSelected(QString)), this, SLOT(loadFile(QString)));

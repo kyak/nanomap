@@ -35,7 +35,7 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     m_downloadMode(Tiles),
     m_tabWidget(new QTabWidget(this)),
     m_dlProgress(new QProgressBar(this)),
-    m_startButton(new QPushButton("&Start", this)),
+    m_startButton(new QPushButton("&Start download", this)),
     m_backButton(new QPushButton("&Back", this)),
     m_startLevel(0),
     m_dlRect(),
@@ -61,9 +61,11 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     m_dlProgress->hide();
     layout->addWidget(m_dlProgress, 1, 0, 1, 2);
 
+    m_startButton->setIcon(QIcon(":ok.png"));
     connect(m_startButton, SIGNAL(clicked()), this, SLOT(startDownload()));
     layout->addWidget(m_startButton, 2, 0);
 
+    m_backButton->setIcon(QIcon(":cancel.png"));
     connect(m_backButton, SIGNAL(clicked()), this, SIGNAL(back()));
     layout->addWidget(m_backButton, 2, 1);
 

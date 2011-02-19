@@ -243,7 +243,7 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
         }
         case Qt::Key_D:
         {
-            if (event->modifiers() == Qt::NoModifier) {
+            if (event->modifiers() == Qt::ControlModifier) {
                 emit downloadArea(m_level, geoRect());
             }
             break;
@@ -416,12 +416,12 @@ void MapWidget::paintEvent(QPaintEvent *event)
         usage << "l: Show/hide individual layers";
         usage << "tab: Show/hide marker list";
         if (m_networkMode) {
-            usage << "d: Download map data for visible area";
+            usage << "Crtl+d: Download map data for visible area";
             painter.drawText(30, 200, 260, 20, Qt::AlignCenter, "Map data: (C) OpenStreetMap.org");
         } else if (!m_copyright.isEmpty()) {
             painter.drawText(30, 200, 260, 20, Qt::AlignCenter, "Map data: (C) "+m_copyright);
         }
-        usage << "Ctrl+o: Load POI / Track file";
+        usage << "Ctrl+o: Open POI / Track file";
         painter.drawText(30, 10, 260, 20, Qt::AlignCenter, "NanoMap - Usage");
         painter.drawLine(70, 27, 250, 27);
         painter.drawText(30, 30, 260, 200, Qt::AlignLeft, usage.join("\n"));
