@@ -1,5 +1,5 @@
 /*
- * Copyright 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2010-2011  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,10 +41,6 @@ void AbstractLayer::zoom(int level)
 void AbstractLayer::pan(const QPoint &move)
 {
     Q_UNUSED(move)
-}
-
-void AbstractLayer::triggerAction()
-{
 }
 
 void AbstractLayer::keyPressed(QKeyEvent *event)

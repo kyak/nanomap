@@ -1,5 +1,5 @@
 /*
- * Copyright 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2010-2011  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,24 +60,19 @@ void MarkerLayer::load(const QString &filename)
     set.endGroup();
 }
 
-void MarkerLayer::triggerAction()
-{
-    int n = 0;
-    if (!m_markerName.isEmpty()) {
-        n = m_markerName.last().toInt();
-    }
-    QString newName = QString::number(n+1);
-
-    m_markerPos << map()->geoPos();
-    m_markerName << newName;
-    emit markerAdded(newName);
-}
-
 void MarkerLayer::keyPressed(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_M) {
         if (event->modifiers() == Qt::NoModifier) {
-            triggerAction();
+            int n = 0;
+            if (!m_markerName.isEmpty()) {
+                n = m_markerName.last().toInt();
+            }
+            QString newName = QString::number(n+1);
+
+            m_markerPos << map()->geoPos();
+            m_markerName << newName;
+            emit markerAdded(newName);
         } else if (event->modifiers() == Qt::AltModifier) {
             toggleVisibility();
         }

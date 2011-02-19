@@ -1,5 +1,5 @@
 /*
- * Copyright 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2010-2011  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,18 +44,13 @@ GpsLayer::GpsLayer(MapWidget *map) :
     m_gps->connectGps();
 }
 
-void GpsLayer::triggerAction()
-{
-    if (isVisible()) {
-        map()->centerOnGeoPos(m_pos.x(), m_pos.y());
-    }
-}
-
 void GpsLayer::keyPressed(QKeyEvent *event)
 {
     if (event->modifiers() == Qt::NoModifier &&
         event->key() == Qt::Key_G) {
-        triggerAction();
+        if (isVisible()) {
+            map()->centerOnGeoPos(m_pos.x(), m_pos.y());
+        }
     }
 }
 

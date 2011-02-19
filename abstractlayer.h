@@ -1,5 +1,5 @@
 /*
- * Copyright 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2010-2011  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,6 @@ public:
     virtual void load(const QString &filename);
     virtual void zoom(int level);
     virtual void pan(const QPoint &move);
-    virtual void triggerAction();
     virtual void keyPressed(QKeyEvent *event);
 
     void paintLayer(QPainter *painter);
