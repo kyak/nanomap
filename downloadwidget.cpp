@@ -26,7 +26,6 @@
 #include <QtCore/QFile>
 #include <QtCore/QSettings>
 #include <QtGui/QLayout>
-#include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QNetworkRequest>
 
 DownloadWidget::DownloadWidget(QWidget *parent)
@@ -40,6 +39,7 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     m_startLevel(0),
     m_dlRect(),
     m_dlList(),
+    m_currentDownload(0),
     m_prefix("OSM"),
     m_up(new QLabel("N 0", this)),
     m_left(new QLabel("E 0", this)),
@@ -50,7 +50,9 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     m_skipExisting(new QCheckBox("S&kip already downloaded tiles", this)),
     m_poiType(new QComboBox(this)),
     m_makePOILayer(new QCheckBox("&Load file after download", this)),
-    m_destFilename(new QLineEdit(QDir::homePath()+"/pois.osm", this))
+    m_destFilename(new QLineEdit(QDir::homePath()+"/pois.osm", this)),
+    m_packageList(new QListWidget(this)),
+    m_destDir(new QLineEdit(QDir::homePath(), this))
 {
     QGridLayout *layout = new QGridLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -87,13 +89,13 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     label->setFrameShape(QLabel::Box);
     layout->addWidget(label, 1, 1, 1, 2);
 
-    label = new QLabel("Download up to level", this);
+    label = new QLabel("Download up to level:", this);
     layout->addWidget(label, 3, 0, 1, 2);
 
     m_levelSpinBox->setRange(0, 18);
     layout->addWidget(m_levelSpinBox, 3, 2, 1, 2);
 
-    label = new QLabel("Download into directory", this);
+    label = new QLabel("Download into directory:", this);
     layout->addWidget(label, 4, 0, 1, 2);
 
     m_prefixInput->setText(m_prefix);
@@ -138,10 +140,22 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     widget = new QWidget(this);
     layout = new QGridLayout(widget);
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setRowStretch(1, 1);
 
-    label = new QLabel("TODO", this);
+    label = new QLabel("This Page does not work yet!!!", this);
     label->setAlignment(Qt::AlignCenter);
-    layout->addWidget(label, 0, 0);
+    layout->addWidget(label, 0, 0, 1, 2);
+
+    QPushButton *updateList = new QPushButton("Update list", this);
+    connect(updateList, SIGNAL(clicked()), this, SLOT(updateSourceList()));
+    layout->addWidget(updateList, 0, 2);
+
+    layout->addWidget(m_packageList, 1, 0, 1, 3);
+
+    label = new QLabel("Download into directory:", this);
+    layout->addWidget(label, 2, 0);
+
+    layout->addWidget(m_destDir, 2, 1, 1, 2);
 
     m_tabWidget->addTab(widget, "&Routing data");
 
@@ -204,6 +218,16 @@ void DownloadWidget::replyFinished(QNetworkReply *reply)
         case POIs:
             replyFinishedPOIs(reply);
             break;
+        case SourceList:
+            if (reply->error() == QNetworkReply::NoError) {
+                QStringList list = QString::fromUtf8(reply->readAll().constData()).split("\n");
+                foreach (const QString &pkg, list) {
+                    QListWidgetItem *item = new QListWidgetItem(pkg.section('@', 0, 0));
+                    item->setData(Qt::UserRole, QVariant(pkg.section('@', 1)));
+                    m_packageList->addItem(item);
+                }
+            }
+            break;
     }
     reply->deleteLater();
 }
@@ -212,6 +236,26 @@ void DownloadWidget::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 {
     m_dlProgress->setRange(0, bytesTotal);
     m_dlProgress->setValue(bytesReceived);
+}
+
+void DownloadWidget::saveDownload()
+{
+    if (m_currentDownload->error() != QNetworkReply::NoError) {
+        return;
+    }
+    QString path = m_currentDownload->url().path().section("/", -2);
+    QByteArray a = m_currentDownload->readAll();
+
+    QFile file(m_destDir->text()+"/"+path);
+    if (file.open(QFile::WriteOnly)) {
+        file.write(a);
+    }
+}
+
+void DownloadWidget::updateSourceList()
+{
+    m_downloadMode = SourceList;
+    m_manager->get(QNetworkRequest(QUrl("http://host.domain.tld/path/source.list")));
 }
 
 void DownloadWidget::startDownloadTiles()
@@ -330,10 +374,33 @@ void DownloadWidget::replyFinishedPOIs(QNetworkReply *reply)
 
 void DownloadWidget::startDownloadPackages()
 {
-    QUrl url("http://download../...");
-    QNetworkReply *reply = m_manager->get(QNetworkRequest(url));
-    connect(reply, SIGNAL(downloadProgress(qint64, qint64)),
+    QListWidgetItem *item = m_packageList->currentItem();
+    if (!item) {
+        return;
+    }
+
+    QString baseUrl = item->data(Qt::UserRole).toString();
+    m_dlList << baseUrl+"Contraction Hierarchies_config";
+    m_dlList << baseUrl+"Contraction Hierarchies_edges";
+    m_dlList << baseUrl+"Contraction Hierarchies_names";
+    m_dlList << baseUrl+"Contraction Hierarchies_paths";
+    m_dlList << baseUrl+"Contraction Hierarchies_types";
+    m_dlList << baseUrl+"GPSGrid_config";
+    m_dlList << baseUrl+"GPSGrid_grid";
+    m_dlList << baseUrl+"GPSGrid_index_1";
+    m_dlList << baseUrl+"GPSGrid_index_2";
+    m_dlList << baseUrl+"GPSGrid_index_3";
+    m_dlList << baseUrl+"OSM Renderer_settings";
+    m_dlList << baseUrl+"plugins.ini";
+    m_dlList << baseUrl+"Unicode Tournament Trie_main";
+    m_dlList << baseUrl+"Unicode Tournament Trie_sub";
+    m_dlList << baseUrl+"Unicode Tournament Trie_ways";
+
+    m_currentDownload = m_manager->get(QNetworkRequest(QUrl(m_dlList.takeFirst())));
+    connect(m_currentDownload, SIGNAL(downloadProgress(qint64, qint64)),
             this, SLOT(downloadProgress(qint64, qint64)));
+    connect(m_currentDownload, SIGNAL(readReady()),
+            this, SLOT(saveDownload()));
 
     m_dlProgress->show();
     m_dlProgress->setValue(0);
@@ -347,10 +414,19 @@ void DownloadWidget::replyFinishedPackages(QNetworkReply *reply)
 {
     Q_UNUSED(reply)
 
-    m_dlProgress->hide();
-    m_tabWidget->setEnabled(true);
-    m_startButton->setEnabled(true);
-    m_backButton->setEnabled(true);
+    if (m_dlList.isEmpty()) {
+        m_dlProgress->hide();
+        m_tabWidget->setEnabled(true);
+        m_startButton->setEnabled(true);
+        m_backButton->setEnabled(true);
+    } else {
+        QUrl url(m_dlList.takeFirst());
+        m_currentDownload = m_manager->get(QNetworkRequest(url));
+        connect(m_currentDownload, SIGNAL(downloadProgress(qint64, qint64)),
+                this, SLOT(downloadProgress(qint64, qint64)));
+        connect(m_currentDownload, SIGNAL(readReady()),
+                this, SLOT(saveDownload()));
+    }
 }
 
 QString DownloadWidget::lon2string(qreal lon)

@@ -24,12 +24,14 @@
 #include <QtGui/QComboBox>
 #include <QtGui/QLabel>
 #include <QtGui/QLineEdit>
+#include <QtGui/QListWidget>
 #include <QtGui/QProgressBar>
 #include <QtGui/QPushButton>
 #include <QtGui/QSpinBox>
 #include <QtGui/QTabWidget>
 #include <QtGui/QWidget>
 #include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
 
 class DownloadWidget : public QWidget
 {
@@ -49,12 +51,15 @@ private slots:
     void startDownload();
     void replyFinished(QNetworkReply *reply);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void saveDownload();
+    void updateSourceList();
 
 private:
     enum DownloadMode {
         Tiles,
         POIs,
-        Packages
+        Packages,
+        SourceList
     };
 
     void startDownloadTiles();
@@ -76,6 +81,7 @@ private:
     int m_startLevel;
     QRectF m_dlRect;
     QStringList m_dlList;
+    QNetworkReply *m_currentDownload;
     QString m_prefix;
     QLabel *m_up, *m_left, *m_right, *m_bottom;
     QSpinBox *m_levelSpinBox;
@@ -84,6 +90,8 @@ private:
     QComboBox *m_poiType;
     QCheckBox *m_makePOILayer;
     QLineEdit *m_destFilename;
+    QListWidget *m_packageList;
+    QLineEdit *m_destDir;
 
 };
 
