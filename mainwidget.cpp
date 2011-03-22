@@ -119,7 +119,7 @@ void MainWidget::loadFile(const QString &fileName, const QString &title)
     } else if (fileName.endsWith(".osm")) {
         AbstractLayer *l = new PoiLayer(m_map);
         l->load(fileName);
-        QString t = title.isEmpty() ? "Points Of Interest" : title;
+        QString t = title.isEmpty() ? fileName.section("/", -1) : title;
         m_map->addLayer(l, 3, t);
     }
     showMap();
