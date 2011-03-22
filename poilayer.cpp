@@ -28,14 +28,17 @@
 #include <QtCore/QSettings>
 #include <QtXml/QXmlStreamReader>
 
+QHash<QString, QPixmap*> PoiLayer::m_iconCache = QHash<QString, QPixmap*>();
+
 PoiLayer::PoiLayer(MapWidget *map) :
     AbstractLayer(map),
+    m_level(0),
     m_points(),
     m_pointsOnScreen(),
     m_icons(),
+    m_names(),
     m_pointsOffset(0, 0),
-    m_iconPath(),
-    m_iconCache()
+    m_iconPath()
 {
     QSettings set(QDir::homePath()+"/Maps/nanomap.conf", QSettings::NativeFormat);
 
@@ -100,6 +103,7 @@ void PoiLayer::load(const QString &filename)
                                 }
                                 m_points << pos;
                                 m_icons << t;
+                                m_names << tags.value("name", "");
                                 break;
                             }
                         }
@@ -114,6 +118,7 @@ void PoiLayer::load(const QString &filename)
 
 void PoiLayer::zoom(int level)
 {
+    m_level = level;
     if (m_points.isEmpty()) {
         return;
     }
@@ -137,10 +142,27 @@ void PoiLayer::pan(const QPoint &move)
 
 void PoiLayer::paint(QPainter *painter)
 {
+    QFont font = painter->font();
+    font.setPointSize(8);
+    painter->setFont(font);
+
+    QFontMetrics fm(font);
+    int dy = -fm.ascent()-10;
+
+    painter->setBrush(QColor(200, 200, 255, 190));
     QPoint p;
     for (int i = 0; i < m_pointsOnScreen.count(); ++i) {
-        p = m_pointsOnScreen.at(i);
-        painter->drawPixmap(p + m_pointsOffset, *m_iconCache.value(m_icons.at(i)));
+        p = m_pointsOnScreen.at(i) + m_pointsOffset;
+        painter->drawPixmap(p - QPoint(8, 8), *m_iconCache.value(m_icons.at(i)));
+
+        QPoint delta = p - QPoint(160, 120);
+        if (m_level > 12 && delta.manhattanLength() < 25) {
+            int dx = fm.width(m_names.at(i));
+            painter->setPen(QColor(200, 200, 255, 190));
+            painter->drawRect(QRect(p - QPoint(dx/2, -10), QSize(dx, fm.height())));
+            painter->setPen(Qt::black);
+            painter->drawText(p - QPoint(dx/2, dy), m_names.at(i));
+        }
     }
 }
 

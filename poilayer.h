@@ -1,5 +1,5 @@
 /*
- * Copyright 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2010-2011  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,12 +38,13 @@ protected:
     virtual void paint(QPainter *painter);
 
 private:
+    int m_level;
     QList<QPointF> m_points;
     QList<QPoint> m_pointsOnScreen;
-    QStringList m_icons;
+    QStringList m_icons, m_names;
     QPoint m_pointsOffset;
     QString m_iconPath;
-    QHash<QString, QPixmap*> m_iconCache;
+    static QHash<QString, QPixmap*> m_iconCache;
 
 };
 
