@@ -21,7 +21,6 @@
 #define DOWNLOADWIDGET_H
 
 #include <QtGui/QCheckBox>
-#include <QtGui/QComboBox>
 #include <QtGui/QLabel>
 #include <QtGui/QLineEdit>
 #include <QtGui/QListWidget>
@@ -87,7 +86,7 @@ private:
     QSpinBox *m_levelSpinBox;
     QLineEdit *m_prefixInput;
     QCheckBox *m_skipExisting;
-    QComboBox *m_poiType;
+    QListWidget *m_poiTypes;
     QCheckBox *m_makePOILayer;
     QLineEdit *m_destFilename;
     QListWidget *m_packageList;

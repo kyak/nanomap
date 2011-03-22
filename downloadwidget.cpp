@@ -48,7 +48,7 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     m_levelSpinBox(new QSpinBox(this)),
     m_prefixInput(new QLineEdit(this)),
     m_skipExisting(new QCheckBox("S&kip already downloaded tiles", this)),
-    m_poiType(new QComboBox(this)),
+    m_poiTypes(new QListWidget(this)),
     m_makePOILayer(new QCheckBox("&Load file after download", this)),
     m_destFilename(new QLineEdit(QDir::homePath()+"/pois.osm", this)),
     m_packageList(new QListWidget(this)),
@@ -109,10 +109,7 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     widget = new QWidget(this);
     layout = new QGridLayout(widget);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->setRowStretch(1, 1);
-
-    label = new QLabel("Type:", this);
-    layout->addWidget(label, 0, 0);
+    layout->setRowStretch(0, 1);
 
     QSettings set(QDir::homePath()+"/Maps/nanomap.conf", QSettings::NativeFormat);
     set.beginGroup("poi");
@@ -123,17 +120,19 @@ DownloadWidget::DownloadWidget(QWidget *parent)
     foreach (const QString &icon, icons) {
         QString name = icon;
         name.remove(".png");
-        m_poiType->addItem(QIcon(iconPath+"/"+icon), name);
+        QListWidgetItem *item = new QListWidgetItem(QIcon(iconPath+"/"+icon), name);
+        m_poiTypes->addItem(item);
     }
-    layout->addWidget(m_poiType, 0, 1, 1, 3);
+    //m_poiTypes->setSelectionMode(QAbstractItemView::MultiSelection);
+    layout->addWidget(m_poiTypes, 0, 0, 1, 4);
 
     m_makePOILayer->setChecked(true);
-    layout->addWidget(m_makePOILayer , 2, 0, 1, 4);
+    layout->addWidget(m_makePOILayer , 1, 0, 1, 4);
 
     label = new QLabel("Save to:", this);
-    layout->addWidget(label , 3, 0);
+    layout->addWidget(label , 2, 0);
 
-    layout->addWidget(m_destFilename, 3, 1, 1, 3);
+    layout->addWidget(m_destFilename, 2, 1, 1, 3);
 
     m_tabWidget->addTab(widget, "&Points of Interest");
 
@@ -327,12 +326,17 @@ void DownloadWidget::replyFinishedTiles(QNetworkReply *reply)
 
 void DownloadWidget::startDownloadPOIs()
 {
-    QString baseUrl("http://azure.openstreetmap.org/xapi/api/0.6/node");
-    QString key = m_poiType->currentText().section("-", 0, 0);
-    QString value = m_poiType->currentText().section("-", 1);
+    QListWidgetItem *item = m_poiTypes->currentItem();
+    if (!item) {
+        return;
+    }
+    QString key = item->text().section("-", 0, 0);
+    QString value = item->text().section("-", 1);
     QString keyValue = QString("[%1=%2]").arg(key, value);
     QString bbox = QString("[bbox=%1,%2,%3,%4]").arg(m_dlRect.left()).arg(m_dlRect.top())
                                                 .arg(m_dlRect.right()).arg(m_dlRect.bottom());
+
+    QString baseUrl("http://azure.openstreetmap.org/xapi/api/0.6/node");
     QUrl url(baseUrl+keyValue+bbox);
     QNetworkReply *reply = m_manager->get(QNetworkRequest(url));
     connect(reply, SIGNAL(downloadProgress(qint64, qint64)),
@@ -368,7 +372,7 @@ void DownloadWidget::replyFinishedPOIs(QNetworkReply *reply)
     file.close();
 
     if (m_makePOILayer->isChecked()) {
-        emit loadFile(m_destFilename->text(), m_poiType->currentText().section("-", 1));
+        emit loadFile(m_destFilename->text(), m_poiTypes->currentItem()->text().section("-", 1));
     }
 }
 
