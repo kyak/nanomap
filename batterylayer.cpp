@@ -1,5 +1,5 @@
 /*
- * Copyright 2010  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
+ * Copyright 2010-2011  Niels Kummerfeldt <niels.kummerfeldt@tu-harburg.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,21 +54,25 @@ void BatteryLayer::paint(QPainter *painter)
 
     painter->setBrush(QBrush(QColor(255, 255, 255, 210)));
     painter->drawRoundedRect(w - 111, h - 17, 110, 16, 5, 5);
-    painter->drawText(w - 101, h - 15, 90, 14, Qt::AlignCenter, QString("%1%").arg(m_percent));
+    QColor color;
     if (m_isCharging) {
-        painter->setBrush(QBrush(QColor(0, 255, 0, 110)));
+        color = QColor(0, 255, 0, 220);
     } else {
-        painter->setBrush(QBrush(QColor(0, 0, 255, 110)));
+        color = QColor(0, 0, 255, 220);
     }
+    QLinearGradient grad(w - 111, h - 17, w - 111, h - 1);
+    grad.setColorAt(0, color.lighter());
+    grad.setColorAt(1, color.darker());
+    painter->setBrush(grad);
+
     painter->drawRoundedRect(w - 111, h - 17, 10 + m_percent, 16, 5, 5);
+    painter->drawText(w - 101, h - 15, 90, 14, Qt::AlignCenter, QString("%1%").arg(m_percent));
 }
 
 void BatteryLayer::repaint()
 {
-    if (isVisible()) {
-        if (reload()) {
-            map()->update();
-        }
+    if (isVisible() && reload()) {
+        map()->update();
     }
 }
 
